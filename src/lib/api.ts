@@ -1,4 +1,6 @@
 import type {
+  AccountCheckResponse,
+  AccountKind,
   AuthGoogleResponse,
   BadnameRequest,
   CharacterProbeResponse,
@@ -121,6 +123,15 @@ export const api = {
   getMyWallet: () => request<PlayerWallet>("/players/me/wallet"),
   probeCharacters: (body: { user_id: string; password: string }) =>
     request<CharacterProbeResponse>("/players/characters/probe", {
+      method: "POST",
+      body: JSON.stringify(body),
+    }),
+  checkAccount: (body: {
+    user_id: string;
+    password: string;
+    kind: AccountKind;
+  }) =>
+    request<AccountCheckResponse>("/players/account/check", {
       method: "POST",
       body: JSON.stringify(body),
     }),

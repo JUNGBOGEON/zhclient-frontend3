@@ -194,6 +194,20 @@ export interface CharacterProbeResponse {
   slaves: CharacterEntry[];
 }
 
+export type AccountKind = "integrated" | "non_integrated";
+
+export interface AccountCheckEntry {
+  name: string;
+  passed: boolean;
+  detail: string;
+}
+
+export interface AccountCheckResponse {
+  ok: boolean;
+  checks: AccountCheckEntry[];
+  slaves: CharacterEntry[];
+}
+
 export interface EligibilityRequest {
   user_id: string;
   password: string;
@@ -204,5 +218,9 @@ export interface StoredAccount {
   label: string;
   user_id: string;
   password: string;
+  kind: AccountKind;
   created_at: string;
+  last_checked_at?: string;
+  last_check?: AccountCheckResponse;
+  selected_slave_index?: number;
 }

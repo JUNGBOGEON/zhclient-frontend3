@@ -6,12 +6,7 @@ import {
   AccountManager,
   useStoredAccounts,
 } from "@/components/macros/account-manager";
-import {
-  CREDENTIAL_MANUAL,
-  CredentialFields,
-} from "@/components/macros/credential-fields";
 import { JobTable } from "@/components/macros/job-table";
-import { SlavePicker } from "@/components/macros/slave-picker";
 import { SnipeControls } from "@/components/macros/snipe-controls";
 import { useToast } from "@/components/providers/toast-provider";
 import { Button } from "@/components/ui/button";
@@ -19,34 +14,44 @@ import { SectionCard } from "@/components/ui/card";
 import { TextInput } from "@/components/ui/input";
 import { ApiError, api } from "@/lib/api";
 import { generateIdempotencyKey } from "@/lib/format";
-import type { JobResponse, MacroOpType } from "@/types/api";
+import type {
+  AccountKind,
+  JobResponse,
+  MacroOpType,
+  StoredAccount,
+} from "@/types/api";
 
-type TabKey = MacroOpType;
+type TabKey = "snipe_badname" | "snipe_rename" | "snipe_character";
 
 type TabDef = {
   key: TabKey;
   title: string;
   subtitle: string;
+  requires: AccountKind;
+  requiresSlave: boolean;
 };
 
 const TABS: TabDef[] = [
-  { key: "badname", title: "미통디", subtitle: "욕설/금칙 닉네임 자동 전환" },
   {
     key: "snipe_badname",
-    title: "미통디 전용 스나이프",
-    subtitle: "타겟 닉네임 열리면 미통디 전환",
+    title: "미통디",
+    subtitle: "미통합 계정의 닉네임을 타겟 닉으로 전환",
+    requires: "non_integrated",
+    requiresSlave: false,
   },
-  { key: "rename", title: "닉변", subtitle: "선택한 부캐 닉네임 변경" },
   {
     key: "snipe_rename",
-    title: "닉변 전용 스나이프",
-    subtitle: "타겟 닉네임 열리면 부캐 닉변",
+    title: "닉네임변경",
+    subtitle: "통합 계정의 기존 캐릭터를 타겟 닉으로 변경",
+    requires: "integrated",
+    requiresSlave: true,
   },
-  { key: "character", title: "캐릭터", subtitle: "새 캐릭터 생성" },
   {
     key: "snipe_character",
-    title: "캐릭터 전용 스나이프",
-    subtitle: "타겟 닉네임 열리면 캐릭터 생성",
+    title: "캐릭터생성",
+    subtitle: "통합 계정에 타겟 닉의 새 캐릭터 생성",
+    requires: "integrated",
+    requiresSlave: false,
   },
 ];
 
@@ -55,7 +60,7 @@ const POLL_INTERVAL_MS = 3500;
 export default function MacrosPage() {
   const toast = useToast();
   const { accounts, setAccounts } = useStoredAccounts();
-  const [activeTab, setActiveTab] = useState<TabKey>("badname");
+  const [activeTab, setActiveTab] = useState<TabKey>("snipe_badname");
   const [drawerOpen, setDrawerOpen] = useState(false);
   const [jobs, setJobs] = useState<JobResponse[]>([]);
   const [jobsLoading, setJobsLoading] = useState(true);
@@ -68,7 +73,6 @@ export default function MacrosPage() {
 
   useEffect(() => {
     let cancelled = false;
-
     const fetchOnce = async () => {
       try {
         const list = await api.listMyMacros();
@@ -83,14 +87,11 @@ export default function MacrosPage() {
         setRefreshing(false);
       }
     };
-
     void fetchOnce();
-
     const interval = hasActive ? POLL_INTERVAL_MS : POLL_INTERVAL_MS * 2;
     const timer = window.setInterval(() => {
       void fetchOnce();
     }, interval);
-
     return () => {
       cancelled = true;
       window.clearInterval(timer);
@@ -115,17 +116,18 @@ export default function MacrosPage() {
           size="sm"
           onClick={() => setDrawerOpen(true)}
         >
-          저장된 계정 ({accounts.length})
+          계정 관리 ({accounts.length})
         </Button>
       </div>
 
       <TabBar active={activeTab} onChange={setActiveTab} />
 
       <MacroForm
-        key={`${activeTab}-${accounts.length > 0 ? accounts[0].id : "manual"}`}
+        key={`${activeTab}-${accounts.length}`}
         tab={activeTab}
         accounts={accounts}
         onJob={handleSubmitted}
+        onOpenAccounts={() => setDrawerOpen(true)}
       />
 
       <JobTable
@@ -180,91 +182,63 @@ function MacroForm({
   tab,
   accounts,
   onJob,
+  onOpenAccounts,
 }: {
   tab: TabKey;
-  accounts: { id: string; user_id: string; password: string; label: string; created_at: string }[];
+  accounts: StoredAccount[];
   onJob: (job: JobResponse) => void;
+  onOpenAccounts: () => void;
 }) {
   const toast = useToast();
-  const initialAccount = accounts[0];
-  const [selectedId, setSelectedId] = useState<string>(
-    initialAccount ? initialAccount.id : CREDENTIAL_MANUAL,
+  const meta = useMemo(() => TABS.find((t) => t.key === tab)!, [tab]);
+  const eligibleAccounts = useMemo(
+    () => accounts.filter((a) => a.kind === meta.requires),
+    [accounts, meta.requires],
   );
-  const [userId, setUserIdState] = useState(initialAccount?.user_id ?? "");
-  const [password, setPasswordState] = useState(initialAccount?.password ?? "");
+
+  const [accountId, setAccountId] = useState<string>(
+    eligibleAccounts[0]?.id ?? "",
+  );
   const [nickname, setNickname] = useState("");
   const [rate, setRate] = useState<number>(5);
-  const [slaveIndex, setSlaveIndex] = useState<number | null>(null);
   const [submitting, setSubmitting] = useState(false);
 
-  // Credentials can change via manual edit or saved-account selection.
-  // Clear the probed slave whenever either changes so we never submit a
-  // slave_index from a previous account.
-  const setUserId = (value: string) => {
-    setUserIdState(value);
-    setSlaveIndex(null);
-  };
-  const setPassword = (value: string) => {
-    setPasswordState(value);
-    setSlaveIndex(null);
-  };
-
-  const formMeta = useMemo(() => TABS.find((t) => t.key === tab)!, [tab]);
-  const needsSlave = tab === "rename" || tab === "snipe_rename";
-  const isSnipe =
-    tab === "snipe_rename" ||
-    tab === "snipe_character" ||
-    tab === "snipe_badname";
+  const selected = eligibleAccounts.find((a) => a.id === accountId) ?? null;
 
   const onSubmit = async () => {
-    if (!userId.trim() || !password) {
-      toast.show("User ID와 비밀번호가 필요합니다.", "error");
+    if (!selected) {
+      toast.show("계정을 먼저 선택하세요.", "error");
       return;
     }
     if (!nickname.trim()) {
       toast.show("닉네임을 입력해 주세요.", "error");
       return;
     }
-    if (needsSlave && slaveIndex === null) {
-      toast.show("대상 캐릭터를 먼저 선택하세요.", "error");
+    if (meta.requiresSlave && selected.selected_slave_index === undefined) {
+      toast.show("계정 관리에서 캐릭터를 먼저 선택하세요.", "error");
       return;
     }
     setSubmitting(true);
     try {
       const idempotency_key = generateIdempotencyKey();
-      const basePayload = {
-        user_id: userId.trim(),
-        password,
+      const base = {
+        user_id: selected.user_id,
+        password: selected.password,
         nickname: nickname.trim(),
         idempotency_key,
       };
       let job: JobResponse;
-      if (tab === "badname") {
-        job = await api.macroBadname(basePayload);
-      } else if (tab === "character") {
-        job = await api.macroCharacter(basePayload);
-      } else if (tab === "rename") {
-        job = await api.macroRename({
-          ...basePayload,
-          slave_index: slaveIndex ?? 0,
-        });
-      } else if (tab === "snipe_rename") {
+      if (tab === "snipe_rename") {
         job = await api.macroSnipeRename({
-          ...basePayload,
-          slave_index: slaveIndex ?? 0,
+          ...base,
+          slave_index: selected.selected_slave_index ?? 0,
           rate_per_second: rate,
         });
       } else if (tab === "snipe_character") {
-        job = await api.macroSnipeCharacter({
-          ...basePayload,
-          rate_per_second: rate,
-        });
+        job = await api.macroSnipeCharacter({ ...base, rate_per_second: rate });
       } else {
         // snipe_badname
-        job = await api.macroSnipeBadname({
-          ...basePayload,
-          rate_per_second: rate,
-        });
+        job = await api.macroSnipeBadname({ ...base, rate_per_second: rate });
       }
       onJob(job);
       setNickname("");
@@ -277,45 +251,53 @@ function MacroForm({
     }
   };
 
+  if (eligibleAccounts.length === 0) {
+    return (
+      <SectionCard title={meta.title} description={meta.subtitle}>
+        <div className="flex flex-col items-start gap-3 rounded-[8px] border border-dashed border-[#2a2a2a] p-5">
+          <p className="text-[13px] text-[#b3b3b3]">
+            이 매크로에 사용할{" "}
+            <span className="text-white">
+              {meta.requires === "integrated" ? "통합 계정" : "미통합 계정"}
+            </span>
+            이 없습니다.
+          </p>
+          <Button variant="secondary" size="sm" onClick={onOpenAccounts}>
+            계정 추가
+          </Button>
+        </div>
+      </SectionCard>
+    );
+  }
+
   return (
-    <SectionCard title={formMeta.title} description={formMeta.subtitle}>
+    <SectionCard title={meta.title} description={meta.subtitle}>
       <div className="flex flex-col gap-5">
-        <CredentialFields
-          accounts={accounts}
-          selectedId={selectedId}
-          onSelectedIdChange={setSelectedId}
-          userId={userId}
-          onUserIdChange={setUserId}
-          password={password}
-          onPasswordChange={setPassword}
+        <AccountPicker
+          accounts={eligibleAccounts}
+          selectedId={accountId}
+          onChange={setAccountId}
+          onManage={onOpenAccounts}
         />
 
-        {needsSlave ? (
-          <SlavePicker
-            key={`${userId}|${password}`}
-            userId={userId}
-            password={password}
-            selectedSlaveIndex={slaveIndex}
-            onSelectedSlaveIndexChange={setSlaveIndex}
+        {meta.requiresSlave && selected ? (
+          <SlaveReadout
+            selected={selected}
+            onManage={onOpenAccounts}
           />
         ) : null}
 
         <TextInput
-          label="닉네임"
-          placeholder="타겟 닉네임"
+          label="타겟 닉네임"
+          placeholder="확보할 닉네임"
           value={nickname}
           onChange={(e) => setNickname(e.target.value)}
         />
 
-        {isSnipe ? (
-          <SnipeControls rate={rate} onRateChange={setRate} />
-        ) : null}
+        <SnipeControls rate={rate} onRateChange={setRate} />
 
         <div className="flex items-center justify-end gap-2">
-          <Button
-            variant="outline"
-            onClick={() => setNickname("")}
-          >
+          <Button variant="outline" onClick={() => setNickname("")}>
             초기화
           </Button>
           <Button loading={submitting} onClick={onSubmit}>
@@ -326,3 +308,107 @@ function MacroForm({
     </SectionCard>
   );
 }
+
+function AccountPicker({
+  accounts,
+  selectedId,
+  onChange,
+  onManage,
+}: {
+  accounts: StoredAccount[];
+  selectedId: string;
+  onChange: (id: string) => void;
+  onManage: () => void;
+}) {
+  return (
+    <div className="flex flex-col gap-1">
+      <div className="flex items-center justify-between">
+        <span className="text-[13px] text-[#b3b3b3]">계정</span>
+        <button
+          type="button"
+          onClick={onManage}
+          className="text-[12px] text-[#1ed760] hover:underline"
+        >
+          계정 관리
+        </button>
+      </div>
+      <div className="flex flex-col gap-1">
+        {accounts.map((acct) => {
+          const on = acct.id === selectedId;
+          const verified = acct.last_check?.ok ?? false;
+          return (
+            <label
+              key={acct.id}
+              className={`flex cursor-pointer items-center justify-between rounded-[8px] px-3 py-2 text-[13px] transition-colors ${
+                on
+                  ? "bg-[#1f1f1f] text-white"
+                  : "bg-[#181818] text-[#cbcbcb] hover:bg-[#1f1f1f]"
+              }`}
+            >
+              <span className="flex items-center gap-2">
+                <input
+                  type="radio"
+                  name="account-select"
+                  checked={on}
+                  onChange={() => onChange(acct.id)}
+                  className="accent-[#1ed760]"
+                />
+                <span>{acct.label}</span>
+                <span className="text-[11px] text-[#7c7c7c]">
+                  {acct.user_id}
+                </span>
+              </span>
+              <span className="text-[11px]">
+                {verified ? (
+                  <span className="text-[#1ed760]">검증됨</span>
+                ) : (
+                  <span className="text-[#7c7c7c]">미검사</span>
+                )}
+              </span>
+            </label>
+          );
+        })}
+      </div>
+    </div>
+  );
+}
+
+function SlaveReadout({
+  selected,
+  onManage,
+}: {
+  selected: StoredAccount;
+  onManage: () => void;
+}) {
+  const slaves = selected.last_check?.slaves ?? [];
+  const picked = slaves.find(
+    (s) => s.slave_index === selected.selected_slave_index,
+  );
+  return (
+    <div className="flex items-center justify-between rounded-[8px] bg-[#181818] px-3 py-2">
+      <div className="flex flex-col gap-0.5">
+        <span className="text-[12px] text-[#7c7c7c]">대상 캐릭터</span>
+        {picked ? (
+          <span className="text-[13px] text-white">
+            {picked.name}
+            <span className="ml-2 text-[#7c7c7c]">Lv.{picked.level}</span>
+          </span>
+        ) : (
+          <span className="text-[13px] text-[#ffa42b]">
+            계정 관리에서 캐릭터 선택 필요
+          </span>
+        )}
+      </div>
+      <button
+        type="button"
+        onClick={onManage}
+        className="text-[12px] text-[#1ed760] hover:underline"
+      >
+        변경
+      </button>
+    </div>
+  );
+}
+
+// MacroOpType referenced for forward compat with listing endpoint.
+export type _ = MacroOpType;
