@@ -17,14 +17,6 @@ const STATUS_LABEL: Record<MacroStatus, string> = {
   cancelled: "중지됨",
 };
 
-const STATUS_COLOR: Record<MacroStatus, string> = {
-  queued: "text-[#ffa42b]",
-  running: "text-[#539df5]",
-  succeeded: "text-[#1ed760]",
-  failed: "text-[#f3727f]",
-  cancelled: "text-[#7c7c7c]",
-};
-
 const OP_LABEL: Record<MacroOpType, string> = {
   badname: "미통디",
   rename: "닉변",
@@ -52,26 +44,30 @@ export function ActiveJobsCard({
 }) {
   return (
     <section className="flex flex-col gap-6 pt-4">
-      <header className="flex items-center justify-between gap-3">
-        <div className="flex items-center gap-4">
-          <h2 className="text-[24px] font-bold tracking-tight text-white">현재 실행중</h2>
-          <span className="text-[14px] text-[#7c7c7c]">
-            {jobs.length}개
+      <header className="flex items-end justify-between gap-3">
+        <div className="flex flex-col gap-2">
+          <span className="text-[13px] font-bold uppercase tracking-[2px] text-[#7c7c7c]">Now Playing</span>
+          <h2 className="text-[48px] font-bold leading-none tracking-tight text-white md:text-[64px]">현재 실행중</h2>
+        </div>
+        <div className="flex items-center gap-4 pb-2">
+          <span className="hidden text-[14px] font-bold text-[#7c7c7c] md:inline">
+            {jobs.length} 트랙
             {lastUpdated
               ? ` · ${new Date(lastUpdated).toLocaleTimeString("ko-KR")}`
               : ""}
           </span>
+          {onRefresh ? (
+            <Button
+              variant="ghost"
+              size="sm"
+              loading={refreshing}
+              onClick={onRefresh}
+              className="rounded-full"
+            >
+              새로고침
+            </Button>
+          ) : null}
         </div>
-        {onRefresh ? (
-          <Button
-            variant="ghost"
-            size="sm"
-            loading={refreshing}
-            onClick={onRefresh}
-          >
-            새로고침
-          </Button>
-        ) : null}
       </header>
       <JobTableBody jobs={jobs} loading={loading} emptyText="실행 중인 매크로가 없습니다." />
     </section>
@@ -171,7 +167,7 @@ export function HistoryJobsCard() {
       const res = await api.deleteMacroHistory(
         filter === "all" ? undefined : [filter],
       );
-      toast.show(`${res.removed}개 삭제됨`, "info");
+      toast.show(`${res.removed}개 삭제됨`, "success");
       reload();
     } catch (err) {
       toast.show(
@@ -186,47 +182,48 @@ export function HistoryJobsCard() {
   const pageCount = Math.max(1, Math.ceil(total / PAGE_SIZE));
 
   return (
-    <section className="mt-10 flex flex-col gap-6">
-      <header className="flex flex-col gap-6 lg:flex-row lg:items-center lg:justify-between">
-        <div className="flex items-center gap-4">
-          <h2 className="text-[24px] font-bold tracking-tight text-white">이전 로그</h2>
-          <span className="text-[14px] text-[#7c7c7c]">총 {total}개</span>
-        </div>
-        <div className="flex flex-wrap items-center gap-3">
-          {STATUS_FILTERS.map((f) => {
-            const on = filter === f.key;
-            return (
-              <button
-                key={f.key}
-                type="button"
-                onClick={() => setFilter(f.key)}
-                className={`rounded-full px-4 py-1.5 text-[13px] font-bold transition-colors ${
-                  on
-                    ? "bg-white text-black"
-                    : "bg-[#1f1f1f] text-[#b3b3b3] hover:bg-[#2a2a2a] hover:text-white"
-                }`}
-              >
-                {f.label}
-              </button>
-            );
-          })}
-          <div className="ml-2 w-48">
-            <SearchInput
-              placeholder="닉네임 검색"
-              value={search}
-              onChange={(e) => setSearch(e.target.value)}
-            />
+    <section className="mt-20 flex flex-col gap-6">
+      <header className="flex flex-col gap-6">
+        <h2 className="text-[32px] font-bold tracking-tight text-white md:text-[48px]">이전 로그</h2>
+        <div className="flex flex-wrap items-center justify-between gap-4">
+          <div className="flex flex-wrap items-center gap-3">
+            {STATUS_FILTERS.map((f) => {
+              const on = filter === f.key;
+              return (
+                <button
+                  key={f.key}
+                  type="button"
+                  onClick={() => setFilter(f.key)}
+                  className={`rounded-full px-4 py-2 text-[14px] font-bold transition-colors ${
+                    on
+                      ? "bg-white text-black"
+                      : "bg-[#2a2a2a] text-white hover:bg-[#333333]"
+                  }`}
+                >
+                  {f.label}
+                </button>
+              );
+            })}
           </div>
-          <Button
-            variant="ghost"
-            size="sm"
-            loading={pendingBulk}
-            disabled={jobs.length === 0}
-            onClick={handleBulkDelete}
-            className="text-[#f3727f] hover:bg-[#f3727f]/10 hover:text-[#f3727f]"
-          >
-            일괄 삭제
-          </Button>
+          <div className="flex items-center gap-3">
+            <div className="w-56">
+              <SearchInput
+                placeholder="타겟 닉네임 검색"
+                value={search}
+                onChange={(e) => setSearch(e.target.value)}
+              />
+            </div>
+            <Button
+              variant="ghost"
+              size="sm"
+              loading={pendingBulk}
+              disabled={jobs.length === 0}
+              onClick={handleBulkDelete}
+              className="text-[13px] font-bold text-[#f3727f] hover:bg-[#f3727f]/10"
+            >
+              일괄 삭제
+            </Button>
+          </div>
         </div>
       </header>
 
@@ -239,7 +236,7 @@ export function HistoryJobsCard() {
       />
 
       {pageCount > 1 ? (
-        <div className="mt-4 flex items-center justify-center gap-4">
+        <div className="mt-8 flex items-center justify-center gap-4">
           <Button
             variant="ghost"
             onClick={() => setPage((p) => Math.max(0, p - 1))}
@@ -247,7 +244,7 @@ export function HistoryJobsCard() {
           >
             이전
           </Button>
-          <span className="text-[13px] font-bold text-[#b3b3b3]">
+          <span className="text-[13px] font-bold tracking-wide text-[#b3b3b3]">
             {page + 1} / {pageCount}
           </span>
           <Button
@@ -263,7 +260,7 @@ export function HistoryJobsCard() {
   );
 }
 
-// ─── 공용 테이블 바디 (Tracklist Style) ────────────────────────────────
+// ─── 공용 테이블 바디 (Spotify Playlist Style) ─────────────────────────
 
 function JobTableBody({
   jobs,
@@ -278,6 +275,17 @@ function JobTableBody({
   deletable?: boolean;
   onDelete?: (id: string) => void | Promise<void>;
 }) {
+  const toast = useToast();
+
+  const handleCancel = async (jobId: string) => {
+    try {
+      await api.cancelMacro(jobId);
+      toast.show("중지 요청됨", "success");
+    } catch (err) {
+      toast.show(err instanceof ApiError ? err.message : "중지 실패", "error");
+    }
+  };
+
   if (loading && jobs.length === 0) {
     return (
       <div className="py-20 text-center text-[15px] font-bold text-[#b3b3b3]">
@@ -296,87 +304,89 @@ function JobTableBody({
   return (
     <div className="flex flex-col">
       <div className="flex items-center gap-4 px-4 py-2 text-[12px] font-bold uppercase tracking-[1.4px] text-[#b3b3b3]">
-        <div className="w-20">상태</div>
-        <div className="w-16">유형</div>
-        <div className="w-32">대상</div>
-        <div className="w-28">업데이트</div>
-        <div className="min-w-0 flex-1">결과</div>
-        {deletable && <div className="w-10"></div>}
+        <div className="w-8 text-center">#</div>
+        <div className="flex-1 min-w-0">제목</div>
+        <div className="hidden w-56 md:block">결과 / 상태</div>
+        <div className="w-32 text-right">업데이트</div>
       </div>
       <div className="mb-2 h-[1px] w-full bg-[#272727]" />
 
-      <div className="flex flex-col gap-1">
-        {jobs.map((job) => (
-          <div
-            key={job.id}
-            className="group flex items-start gap-4 rounded-[6px] px-4 py-3 transition-colors hover:bg-[#1f1f1f]"
-          >
-            <div className="w-20 pt-0.5 text-[13px] font-bold">
-              <span className={STATUS_COLOR[job.status]}>{STATUS_LABEL[job.status]}</span>
-            </div>
-            <div className="w-16 pt-0.5 text-[13px] text-[#cbcbcb]">
-              {OP_LABEL[job.op_type]}
-            </div>
-            <div className="flex w-32 flex-col">
-              <span className="truncate text-[14px] font-bold text-white">
-                {extractNickname(job.payload) ?? "—"}
-              </span>
-              <span className="text-[11px] text-[#7c7c7c]">
-                {job.id.slice(0, 8)}
-              </span>
-            </div>
-            <div className="flex w-28 flex-col pt-0.5 text-[12px] text-[#b3b3b3]">
-              <span>{formatRelativeFromISO(job.updated_at)}</span>
-              {job.status === "running" || job.status === "queued" ? (
-                <div className="mt-1">
-                  <CancelButton jobId={job.id} />
+      <div className="flex flex-col">
+        {jobs.map((job, idx) => {
+          const isRunning = job.status === "running" || job.status === "queued";
+          const titleColor = isRunning ? "text-[#1ed760]" : "text-white";
+          
+          return (
+            <div
+              key={job.id}
+              className="group flex items-start gap-4 rounded-[4px] px-4 py-3 transition-colors hover:bg-[#2a2a2a]"
+            >
+              {/* 곡 번호 영역 (호버 시 액션 버튼) */}
+              <div className="relative w-8 pt-1 text-center text-[14px] text-[#b3b3b3]">
+                {isRunning ? (
+                  <div className="flex h-full items-center justify-center group-hover:hidden">
+                    <span
+                      aria-hidden
+                      style={{ animation: "zh-pulse-dot 1s ease-in-out infinite" }}
+                      className="inline-block h-2 w-2 rounded-full bg-[#1ed760]"
+                    />
+                  </div>
+                ) : (
+                  <span className="group-hover:hidden">{idx + 1}</span>
+                )}
+                
+                {/* 호버 액션 */}
+                <div className="hidden h-full items-center justify-center group-hover:flex">
+                  {isRunning ? (
+                    <button
+                      type="button"
+                      onClick={() => handleCancel(job.id)}
+                      className="text-[#f3727f] hover:text-[#ff99a4]"
+                      aria-label="중지"
+                      title="매크로 중지"
+                    >
+                      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"/></svg>
+                    </button>
+                  ) : deletable ? (
+                    <button
+                      type="button"
+                      onClick={() => onDelete?.(job.id)}
+                      className="text-[#7c7c7c] hover:text-white"
+                      aria-label="삭제"
+                      title="로그 삭제"
+                    >
+                      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M3 6h18"/><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"/><path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"/></svg>
+                    </button>
+                  ) : (
+                    <span className="text-[#b3b3b3]">{idx + 1}</span>
+                  )}
                 </div>
-              ) : null}
-            </div>
-            <div className="min-w-0 flex-1 pt-0.5">
-              <JobResultCell job={job} />
-            </div>
-            {deletable && (
-              <div className="w-10 pt-0.5 text-right">
-                <button
-                  type="button"
-                  onClick={() => onDelete?.(job.id)}
-                  className="text-[12px] text-[#7c7c7c] opacity-0 transition-opacity hover:text-[#f3727f] group-hover:opacity-100"
-                >
-                  삭제
-                </button>
               </div>
-            )}
-          </div>
-        ))}
+
+              {/* 제목 (타겟 닉네임) & 아티스트 (유형 및 Job ID) */}
+              <div className="flex min-w-0 flex-1 flex-col justify-center">
+                <span className={`truncate text-[16px] font-bold ${titleColor}`}>
+                  {extractNickname(job.payload) ?? "알 수 없음"}
+                </span>
+                <span className="truncate text-[13px] font-bold text-[#b3b3b3] group-hover:text-white transition-colors">
+                  {OP_LABEL[job.op_type]} <span className="mx-1 text-[#7c7c7c]">·</span> {job.id.slice(0, 8)}
+                </span>
+              </div>
+
+              {/* 앨범/상태 영역 (결과 로그 및 세부 사항) */}
+              <div className="hidden w-56 flex-col pt-1 md:flex">
+                <JobResultCell job={job} />
+              </div>
+
+              {/* 업데이트 (시간) */}
+              <div className="w-32 pt-1 text-right text-[13px] font-bold text-[#b3b3b3]">
+                {formatRelativeFromISO(job.updated_at)}
+              </div>
+            </div>
+          );
+        })}
       </div>
     </div>
-  );
-}
-
-function CancelButton({ jobId }: { jobId: string }) {
-  const toast = useToast();
-  const [busy, setBusy] = useState(false);
-  const onClick = async () => {
-    setBusy(true);
-    try {
-      await api.cancelMacro(jobId);
-      toast.show("중지 요청됨 — 곧 반영됩니다", "info");
-    } catch (err) {
-      toast.show(err instanceof ApiError ? err.message : "중지 실패", "error");
-    } finally {
-      setBusy(false);
-    }
-  };
-  return (
-    <button
-      type="button"
-      onClick={onClick}
-      disabled={busy}
-      className="rounded px-1.5 py-0.5 text-[11px] text-[#f3727f] hover:bg-[#f3727f]/10 disabled:opacity-50"
-    >
-      {busy ? "중지중…" : "중지"}
-    </button>
   );
 }
 
@@ -384,19 +394,20 @@ function CancelButton({ jobId }: { jobId: string }) {
 
 function JobResultCell({ job }: { job: JobResponse }) {
   const checks = extractChecks(job.result);
+  
   if (job.error && checks) {
     return <ChecksView error={job.error} checks={checks} />;
   }
   if (job.error) {
     return (
-      <span className="line-clamp-2 text-[12px] text-[#f3727f]">
+      <span className="line-clamp-2 text-[13px] font-bold text-[#f3727f]">
         {job.error}
       </span>
     );
   }
   if (job.status === "succeeded") {
     return (
-      <span className="text-[13px] font-bold text-[#1ed760]">
+      <span className="text-[14px] font-bold text-[#1ed760]">
         {summariseSuccess(job.result)}
       </span>
     );
@@ -407,10 +418,12 @@ function JobResultCell({ job }: { job: JobResponse }) {
       return <LiveProgressView progress={live} />;
     }
     return (
-      <span className="text-[13px] font-bold text-[#b3b3b3]">실행 중…</span>
+      <span className="text-[13px] font-bold text-[#b3b3b3]">
+        진행 중...
+      </span>
     );
   }
-  return <span className="text-[13px] text-[#7c7c7c]">—</span>;
+  return <span className="text-[13px] font-bold text-[#7c7c7c]">—</span>;
 }
 
 type EligibilityCheck = {
@@ -465,13 +478,10 @@ function ChecksView({
   const passed = checks.filter((c) => c.passed);
   return (
     <details className="group">
-      <summary className="cursor-pointer list-none text-[13px] font-bold text-[#f3727f]">
+      <summary className="cursor-pointer list-none text-[13px] font-bold text-[#f3727f] hover:underline">
         <span className="line-clamp-2">{error}</span>
-        <span className="text-[11px] font-normal text-[#7c7c7c] group-open:hidden">
-          클릭해서 체크 상세 보기
-        </span>
       </summary>
-      <div className="mt-1.5 flex flex-col gap-1 text-[11px] font-normal">
+      <div className="mt-2 flex flex-col gap-1 text-[12px] font-bold">
         {failed.map((c) => (
           <div key={c.name} className="flex items-start gap-1.5">
             <span className="mt-0.5 text-[#f3727f]">✗</span>
@@ -486,7 +496,7 @@ function ChecksView({
           </div>
         ))}
         {passed.length > 0 ? (
-          <div className="mt-0.5 text-[#7c7c7c]">
+          <div className="mt-1 text-[#7c7c7c]">
             통과: {passed.map((c) => CHECK_LABEL[c.name] ?? c.name).join(", ")}
           </div>
         ) : null}
@@ -546,23 +556,21 @@ function LiveProgressView({ progress }: { progress: LiveProgress }) {
   const mm = Math.floor(progress.elapsed_s / 60);
   const ss = Math.floor(progress.elapsed_s % 60);
   const elapsed = `${mm.toString().padStart(2, "0")}:${ss.toString().padStart(2, "0")}`;
+  
   return (
-    <details className="group" open>
-      <summary className="cursor-pointer list-none text-[13px] font-bold text-[#539df5]">
-        <div className="flex items-center gap-2">
-          <span
-            aria-hidden
-            style={{ animation: "zh-pulse-dot 1.6s ease-in-out infinite" }}
-            className="inline-block h-1.5 w-1.5 rounded-full bg-[#539df5]"
-          />
-          <span>
-            시도 {p.total}회 · 실측 {progress.actual_rate.toFixed(1)} / 설정{" "}
-            {progress.requested_rate.toFixed(1)} req/s · {elapsed}
+    <details className="group">
+      <summary className="cursor-pointer list-none text-[13px] font-bold text-[#1ed760] hover:underline">
+        <div className="flex flex-col gap-0.5">
+          <span>{p.total}회 시도 중 · {elapsed} 경과</span>
+          <span className="text-[11px] text-[#1ed760]/70">
+            실측 {progress.actual_rate.toFixed(1)} / 설정 {progress.requested_rate.toFixed(1)} req/s
           </span>
         </div>
-        <div className="mt-0.5 flex flex-wrap gap-3 text-[11px] font-normal text-[#7c7c7c]">
-          <span>try 300: {p.try_300}</span>
-          <span>try 409: {p.try_409}</span>
+      </summary>
+      <div className="mt-2 flex flex-col gap-2">
+        <div className="flex flex-wrap gap-2 text-[11px] font-bold text-[#7c7c7c]">
+          <span>try 300: <span className="text-white">{p.try_300}</span></span>
+          <span>try 409: <span className="text-white">{p.try_409}</span></span>
           <span className={p.confirm_ok > 0 ? "text-[#1ed760]" : ""}>
             confirm ok: {p.confirm_ok}
           </span>
@@ -578,32 +586,33 @@ function LiveProgressView({ progress }: { progress: LiveProgress }) {
             <span className="text-[#f3727f]">err: {p.error}</span>
           ) : null}
         </div>
-      </summary>
-      {progress.recent.length > 0 ? (
-        <div className="mt-2 flex flex-col gap-0.5 text-[11px] font-normal">
-          {progress.recent
-            .slice()
-            .reverse()
-            .slice(0, 12)
-            .map((ev, idx) => {
-               const meta =
-                EVENT_LABEL[ev.kind] ?? {
-                  label: ev.kind,
-                  color: "text-[#cbcbcb]",
-                };
-              const time = new Date(ev.t * 1000).toLocaleTimeString("ko-KR");
-              return (
-                <div key={idx} className="flex items-center gap-2">
-                  <span className="text-[#7c7c7c]">{time}</span>
-                  <span className={meta.color}>{meta.label}</span>
-                  {ev.detail ? (
-                    <span className="text-[#7c7c7c]">· {ev.detail}</span>
-                  ) : null}
-                </div>
-              );
-            })}
-        </div>
-      ) : null}
+        
+        {progress.recent.length > 0 ? (
+          <div className="flex flex-col gap-1 text-[11px] font-bold">
+            {progress.recent
+              .slice()
+              .reverse()
+              .slice(0, 5)
+              .map((ev, idx) => {
+                const meta =
+                  EVENT_LABEL[ev.kind] ?? {
+                    label: ev.kind,
+                    color: "text-[#cbcbcb]",
+                  };
+                const time = new Date(ev.t * 1000).toLocaleTimeString("ko-KR", { hour12: false });
+                return (
+                  <div key={idx} className="flex items-center gap-2">
+                    <span className="text-[#7c7c7c]">{time}</span>
+                    <span className={meta.color}>{meta.label}</span>
+                    {ev.detail ? (
+                      <span className="truncate text-[#7c7c7c]">· {ev.detail}</span>
+                    ) : null}
+                  </div>
+                );
+              })}
+          </div>
+        ) : null}
+      </div>
     </details>
   );
 }
