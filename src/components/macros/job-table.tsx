@@ -401,7 +401,7 @@ function JobResultCell({ job }: { job: JobResponse }) {
   if (job.status === "succeeded") {
     return (
       <span className="text-[13px] font-bold text-[#1ed760]">
-        {summariseResult(job.result)}
+        {summariseSuccess(job.result)}
       </span>
     );
   }
@@ -411,16 +411,10 @@ function JobResultCell({ job }: { job: JobResponse }) {
       return <LiveProgressView progress={live} />;
     }
     return (
-      <span className="text-[13px] font-bold text-[#b3b3b3]">
-        {summariseResult(job.result) || "실행 중…"}
-      </span>
+      <span className="text-[13px] font-bold text-[#b3b3b3]">실행 중…</span>
     );
   }
-  return (
-    <span className="text-[13px] text-[#7c7c7c]">
-      {summariseResult(job.result) || "—"}
-    </span>
-  );
+  return <span className="text-[13px] text-[#7c7c7c]">—</span>;
 }
 
 type EligibilityCheck = {
@@ -627,13 +621,15 @@ function extractNickname(
   return null;
 }
 
-function summariseResult(result: Record<string, unknown> | null): string {
-  if (!result) return "";
+function summariseSuccess(result: Record<string, unknown> | null): string {
+  if (!result) return "성공";
   const message = result["message"];
-  if (typeof message === "string") return message;
+  if (typeof message === "string" && message.length > 0) return message;
+  const tcpStatus = result["tcp_status"];
+  if (typeof tcpStatus === "number" && tcpStatus === 0) return "선점 완료";
   const status = result["status"];
-  if (typeof status === "string") return status;
+  if (typeof status === "string" && status.length > 0) return status;
   const summary = result["summary"];
-  if (typeof summary === "string") return summary;
-  return "완료";
+  if (typeof summary === "string" && summary.length > 0) return summary;
+  return "성공";
 }
