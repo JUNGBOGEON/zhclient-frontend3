@@ -492,9 +492,11 @@ function SlaveList({
         {slaves.map((s) => {
           const on = s.slave_index === selected;
           return (
-            <label
+            <button
               key={s.slave_index}
-              className={`group flex cursor-pointer items-center justify-between rounded-[4px] px-3 py-2 transition-colors ${
+              type="button"
+              onClick={() => onSelect(s.slave_index)}
+              className={`group flex w-full cursor-pointer items-center justify-between rounded-[4px] px-3 py-2 text-left transition-colors ${
                 on
                   ? "bg-[#2a2a2a]"
                   : "hover:bg-[#2a2a2a]/50"
@@ -509,7 +511,7 @@ function SlaveList({
                 </span>
               </div>
               <span className="text-[12px] font-bold text-[#7c7c7c]">Lv.{formatNumber(s.level)}</span>
-            </label>
+            </button>
           );
         })}
       </div>
