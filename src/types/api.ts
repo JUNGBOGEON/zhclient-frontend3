@@ -21,12 +21,16 @@ export interface AuthGoogleResponse {
 }
 
 export interface ClanSummary {
-  public_code: string;
+  clan_id: number;
+  public_code: number;
   name: string;
-  level: number;
-  member_count: number;
-  max_members?: number;
-  owner_name?: string;
+  master_name: string;
+  description: string;
+  curr_players: number;
+  max_players: number;
+  game_money: number;
+  owner_id: number;
+  created_at_ms: number;
 }
 
 export interface ClanSearchResponse {
@@ -39,19 +43,18 @@ export interface ClanMember {
   account_id: number;
   name: string;
   level: number;
-  role?: string;
-  last_login_ms?: number | null;
 }
 
 export interface ClanDetail {
-  public_code: string;
+  clan_id: number;
+  public_code: number;
   name: string;
-  level: number;
-  owner_name?: string;
-  member_count: number;
-  max_members?: number;
-  introduction?: string;
-  comment?: string;
+  master_name: string;
+  description: string;
+  active_members: number;
+  max_members: number;
+  game_money: number;
+  created_at_ms: number;
   members: ClanMember[];
 }
 

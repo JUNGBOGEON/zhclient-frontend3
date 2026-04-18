@@ -4,7 +4,7 @@ import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { SearchInput } from "@/components/ui/input";
 import { ApiError, api } from "@/lib/api";
-import { formatLastLogin, formatNumber } from "@/lib/format";
+import { formatNumber } from "@/lib/format";
 import type { ClanDetail, ClanSummary } from "@/types/api";
 
 type SearchState =
@@ -15,7 +15,7 @@ type SearchState =
 
 type DetailState =
   | { state: "idle" }
-  | { state: "loading"; publicCode: string; summaryName: string }
+  | { state: "loading"; publicCode: number; summaryName: string }
   | { state: "ready"; data: ClanDetail }
   | { state: "error"; message: string };
 
@@ -195,17 +195,19 @@ function ClanResults({
               <div className="min-w-0 flex-1">
                 <p className="truncate text-[15px] font-bold text-white transition-colors group-hover:text-[#1ed760]">
                   {clan.name}
-                  <span className="ml-2 text-[12px] font-normal text-[#b3b3b3] group-hover:text-white/70">
-                    Lv.{clan.level}
-                  </span>
+                  {clan.master_name ? (
+                    <span className="ml-2 text-[12px] font-normal text-[#b3b3b3] group-hover:text-white/70">
+                      오너 {clan.master_name}
+                    </span>
+                  ) : null}
                 </p>
               </div>
               <div className="hidden w-32 text-[14px] text-[#b3b3b3] md:block">
                 {clan.public_code}
               </div>
               <div className="w-20 text-right text-[14px] text-[#b3b3b3]">
-                {formatNumber(clan.member_count)}
-                {clan.max_members ? ` / ${formatNumber(clan.max_members)}` : ""}
+                {formatNumber(clan.curr_players)}
+                {clan.max_players ? ` / ${formatNumber(clan.max_players)}` : ""}
               </div>
             </button>
           ))}
@@ -255,9 +257,6 @@ function ClanDetailView({ detail }: { detail: DetailState }) {
   }
   
   const { data } = detail;
-  const onlineCount = data.members.filter((m) =>
-    isOnline(m.last_login_ms),
-  ).length;
 
   return (
     <div className="flex flex-col gap-12">
@@ -271,74 +270,62 @@ function ClanDetailView({ detail }: { detail: DetailState }) {
           </h1>
         </div>
         <div className="mt-2 flex flex-wrap items-center gap-x-6 gap-y-2 text-[14px] text-[#b3b3b3]">
-          <span className="font-bold text-white">Lv. {data.level}</span>
-          <span className="text-[#7c7c7c]">코드: {data.public_code}</span>
+          <span className="text-[#7c7c7c]">코드 {data.public_code}</span>
           <span className="text-white">
-            멤버 {formatNumber(data.member_count)}
+            멤버 {formatNumber(data.active_members)}
             {data.max_members ? ` / ${formatNumber(data.max_members)}` : ""}
           </span>
-          <span className="font-bold text-[#1ed760]">온라인 {onlineCount}명</span>
-          {data.owner_name ? (
-            <span className="text-[#7c7c7c]">오너 {data.owner_name}</span>
+          {data.master_name ? (
+            <span className="font-bold text-white">오너 {data.master_name}</span>
+          ) : null}
+          {data.game_money > 0 ? (
+            <span className="text-[#7c7c7c]">
+              자금 {formatNumber(data.game_money)}
+            </span>
+          ) : null}
+          {data.created_at_ms > 0 ? (
+            <span className="text-[#7c7c7c]">
+              창설 {formatDate(data.created_at_ms)}
+            </span>
           ) : null}
         </div>
-        {data.introduction ? (
-          <p className="mt-4 max-w-3xl text-[14px] leading-relaxed text-[#b3b3b3]">
-            {data.introduction}
+        {data.description ? (
+          <p className="mt-4 max-w-3xl whitespace-pre-wrap text-[14px] leading-relaxed text-[#b3b3b3]">
+            {data.description}
           </p>
         ) : null}
       </section>
 
       <div className="flex flex-col gap-6">
         <h2 className="text-[20px] font-bold text-white">멤버 목록</h2>
-        
+
         <div className="flex flex-col">
           <div className="flex items-center gap-4 px-4 py-2 text-[12px] font-bold uppercase tracking-[1.4px] text-[#b3b3b3]">
             <div className="w-8 text-right">#</div>
             <div className="flex-1">이름</div>
-            <div className="w-32 text-right">접속</div>
+            <div className="w-20 text-right">레벨</div>
           </div>
           <div className="mb-2 h-[1px] w-full bg-[#272727]" />
 
           <div className="flex flex-col gap-1">
-            {data.members.map((member, idx) => {
-              const last = formatLastLogin(member.last_login_ms ?? null);
-              const online = last.tone === "online";
-              return (
-                <div
-                  key={member.account_id}
-                  className="group flex items-center gap-4 rounded-[6px] px-4 py-3 transition-colors hover:bg-[#1f1f1f]"
-                >
-                  <div className="w-8 text-right text-[14px] text-[#b3b3b3]">
-                    {idx + 1}
-                  </div>
-                  <div className="flex min-w-0 flex-1 items-center gap-3">
-                    <span
-                      aria-hidden
-                      className={`inline-block h-2 w-2 shrink-0 rounded-full ${online ? "bg-[#1ed760]" : "bg-[#7c7c7c]"}`}
-                    />
-                    <div className="flex flex-col">
-                      <p className={`truncate text-[15px] font-bold ${online ? "text-white" : "text-[#b3b3b3]"}`}>
-                        {member.name}
-                      </p>
-                      <p className="text-[12px] text-[#7c7c7c]">
-                        Lv.{formatNumber(member.level)}
-                        {member.role ? ` · ${member.role}` : ""}
-                      </p>
-                    </div>
-                  </div>
-                  <div className="w-32 text-right">
-                    <span
-                      className={`text-[13px] ${
-                        online ? "font-bold text-[#1ed760]" : "text-[#7c7c7c]"
-                      }`}
-                    >
-                      {last.label}
-                    </span>
-                  </div>
+            {data.members.map((member, idx) => (
+              <div
+                key={member.account_id}
+                className="group flex items-center gap-4 rounded-[6px] px-4 py-3 transition-colors hover:bg-[#1f1f1f]"
+              >
+                <div className="w-8 text-right text-[14px] text-[#b3b3b3]">
+                  {idx + 1}
                 </div>
-              );
-            })}
+                <div className="min-w-0 flex-1">
+                  <p className="truncate text-[15px] font-bold text-white">
+                    {member.name}
+                  </p>
+                </div>
+                <div className="w-20 text-right text-[13px] text-[#b3b3b3]">
+                  Lv.{formatNumber(member.level)}
+                </div>
+              </div>
+            ))}
             {data.members.length === 0 ? (
               <div className="px-4 py-6 text-center text-[14px] text-[#7c7c7c]">
                 멤버가 없습니다.
@@ -351,8 +338,11 @@ function ClanDetailView({ detail }: { detail: DetailState }) {
   );
 }
 
-function isOnline(ms: number | undefined | null) {
-  if (!ms) return false;
-  const diff = Date.now() - ms;
-  return diff >= 0 && diff < 5 * 60 * 1000;
+function formatDate(ms: number): string {
+  const d = new Date(ms);
+  if (Number.isNaN(d.getTime())) return "";
+  const y = d.getFullYear();
+  const m = String(d.getMonth() + 1).padStart(2, "0");
+  const day = String(d.getDate()).padStart(2, "0");
+  return `${y}.${m}.${day}`;
 }

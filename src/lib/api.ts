@@ -144,8 +144,8 @@ export const api = {
     request<ClanSearchResponse>(
       `/clans/search?name=${encodeURIComponent(name)}`,
     ),
-  getClan: (publicCode: string) =>
-    request<ClanDetail>(`/clans/${encodeURIComponent(publicCode)}`),
+  getClan: (publicCode: number | string) =>
+    request<ClanDetail>(`/clans/${encodeURIComponent(String(publicCode))}`),
   findClanByName: (name: string) =>
     request<ClanDetail>(`/clans/find/${encodeURIComponent(name)}`),
 
