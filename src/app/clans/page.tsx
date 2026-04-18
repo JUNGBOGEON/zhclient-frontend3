@@ -235,7 +235,7 @@ function ClanDetailView({ detail }: { detail: DetailState }) {
   ).length;
   return (
     <div className="flex flex-col gap-4">
-      <section className="rounded-md border border-[#272727] bg-[#181818] p-5">
+      <section className="rounded-[8px] bg-[#181818] p-5">
         <h2 className="text-[20px] font-semibold text-white">{data.name}</h2>
         <p className="mt-0.5 text-[12px] text-[#7c7c7c]">{data.public_code}</p>
         <div className="mt-3 flex flex-wrap gap-x-5 gap-y-1 text-[13px] text-[#b3b3b3]">

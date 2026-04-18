@@ -12,8 +12,8 @@ export const Card = forwardRef<HTMLDivElement, CardProps>(function Card(
   return (
     <div
       ref={ref}
-      className={`rounded-md border border-[#272727] bg-[#181818] p-4 ${
-        interactive ? "hover:border-[#3a3a3a] cursor-pointer" : ""
+      className={`rounded-[8px] bg-[#181818] p-4 transition-all ${
+        interactive ? "hover:bg-[#272727] hover:shadow-[0_8px_8px_rgba(0,0,0,0.3)] cursor-pointer" : ""
       } ${className}`}
       {...rest}
     >
@@ -39,7 +39,7 @@ export function SectionCard({
 }) {
   return (
     <section
-      className={`overflow-hidden rounded-md border border-[#272727] bg-[#181818] ${className}`}
+      className={`overflow-hidden rounded-[8px] bg-[#181818] ${className}`}
     >
       {(title || description || action) && (
         <header className="flex items-start justify-between gap-4 border-b border-[#272727] px-5 py-3">
@@ -71,7 +71,7 @@ export function EmptyState({
   action?: React.ReactNode;
 }) {
   return (
-    <div className="flex flex-col items-center gap-2 rounded border border-dashed border-[#2a2a2a] px-6 py-10 text-center">
+    <div className="flex flex-col items-center gap-2 rounded-[8px] bg-[#1f1f1f] px-6 py-10 text-center">
       <p className="text-[14px] text-white">{title}</p>
       {description ? (
         <p className="max-w-md text-[13px] text-[#7c7c7c]">{description}</p>

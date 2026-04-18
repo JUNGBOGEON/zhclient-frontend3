@@ -75,7 +75,7 @@ function AccountManagerBody({
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 px-4 py-10">
-      <div className="relative w-full max-w-lg rounded-md border border-[#272727] bg-[#181818] p-6">
+      <div className="relative w-full max-w-lg rounded-[8px] bg-[#181818] p-6">
         <button
           type="button"
           aria-label="닫기"
@@ -133,7 +133,7 @@ function AccountManagerBody({
                 {accounts.map((acct) => (
                   <li
                     key={acct.id}
-                    className="flex items-center justify-between gap-3 rounded border border-[#272727] px-3 py-2"
+                    className="flex items-center justify-between gap-3 rounded px-3 py-2"
                   >
                     <div className="min-w-0">
                       <p className="truncate text-[13px] text-white">

@@ -65,7 +65,7 @@ export function SlavePicker({
   if (state.kind === "ready" && state.slaves.length === 1) {
     const only = state.slaves[0];
     return (
-      <div className="flex items-center justify-between rounded-md border border-[#272727] bg-[#181818] px-3 py-2">
+      <div className="flex items-center justify-between rounded-[8px] bg-[#181818] px-3 py-2">
         <div className="flex flex-col">
           <span className="text-[12px] text-[#7c7c7c]">캐릭터</span>
           <span className="text-[13px] text-white">
@@ -84,7 +84,7 @@ export function SlavePicker({
 
   if (state.kind === "ready") {
     return (
-      <fieldset className="flex flex-col gap-2 rounded-md border border-[#272727] bg-[#181818] p-3">
+      <fieldset className="flex flex-col gap-2 rounded-[8px] bg-[#181818] p-3">
         <legend className="px-1 text-[12px] text-[#b3b3b3]">
           캐릭터 선택
         </legend>
@@ -133,7 +133,7 @@ export function SlavePicker({
   }
 
   return (
-    <div className="flex items-center justify-between gap-3 rounded-md border border-[#272727] bg-[#181818] px-3 py-2">
+    <div className="flex items-center justify-between gap-3 rounded-[8px] bg-[#181818] px-3 py-2">
       <span className="text-[12px] text-[#7c7c7c]">
         {state.kind === "error"
           ? state.message

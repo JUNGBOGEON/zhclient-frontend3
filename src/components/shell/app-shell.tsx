@@ -94,7 +94,7 @@ function TopNav({
   onOpenDrawer: () => void;
 }) {
   return (
-    <header className="sticky top-0 z-40 border-b border-[#272727] bg-[#121212]/95 backdrop-blur">
+    <header className="sticky top-0 z-40 bg-[#121212]/95 backdrop-blur">
       <div className="mx-auto flex h-14 w-full max-w-6xl items-center gap-6 px-5 sm:px-6">
         <BrandMark size="sm" />
         <nav className="hidden flex-1 items-center gap-1 lg:flex">
@@ -105,10 +105,10 @@ function TopNav({
                 key={item.href}
                 href={item.href}
                 aria-current={active ? "page" : undefined}
-                className={`inline-flex items-center rounded px-3 py-1.5 text-[13px] transition-colors ${
+                className={`inline-flex items-center rounded-full px-4 py-2 text-[14px] transition-all ${
                   active
-                    ? "text-white"
-                    : "text-[#b3b3b3] hover:text-white"
+                    ? "text-white font-bold bg-[#1f1f1f]"
+                    : "text-[#b3b3b3] font-normal hover:text-white"
                 }`}
               >
                 {item.label}
@@ -126,7 +126,7 @@ function TopNav({
 
         <button
           type="button"
-          className="ml-auto inline-flex h-9 w-9 items-center justify-center rounded bg-[#1f1f1f] text-white lg:hidden"
+          className="ml-auto inline-flex h-10 w-10 items-center justify-center rounded-full bg-[#1f1f1f] text-white lg:hidden"
           onClick={onOpenDrawer}
           aria-label="메뉴 열기"
         >
@@ -158,7 +158,7 @@ function UserPill({
   return (
     <Link
       href="/me"
-      className="inline-flex items-center gap-2 rounded px-2 py-1 text-[13px] text-[#b3b3b3] transition-colors hover:text-white"
+      className="inline-flex items-center gap-2 rounded-full px-2 py-1 text-[13px] text-[#b3b3b3] transition-colors hover:text-white"
     >
       {user.picture_url ? (
         // eslint-disable-next-line @next/next/no-img-element
@@ -202,17 +202,17 @@ function MobileDrawer({
         }`}
       />
       <aside
-        className={`fixed inset-y-0 right-0 z-50 flex w-[280px] flex-col border-l border-[#272727] bg-[#181818] transition-transform duration-200 lg:hidden ${
+        className={`fixed inset-y-0 right-0 z-50 flex w-[280px] flex-col bg-[#181818] shadow-[0_8px_24px_rgba(0,0,0,0.5)] transition-transform duration-200 lg:hidden ${
           open ? "translate-x-0" : "translate-x-full"
         }`}
       >
-        <div className="flex h-14 items-center justify-between border-b border-[#272727] px-5">
+        <div className="flex h-14 items-center justify-between px-5">
           <BrandMark size="sm" asLink={false} />
           <button
             type="button"
             onClick={onClose}
             aria-label="메뉴 닫기"
-            className="inline-flex h-8 w-8 items-center justify-center rounded text-[#b3b3b3] hover:text-white"
+            className="inline-flex h-8 w-8 items-center justify-center rounded-full text-[#b3b3b3] hover:text-white"
           >
             ×
           </button>
@@ -226,10 +226,10 @@ function MobileDrawer({
                 href={item.href}
                 onClick={onClose}
                 aria-current={active ? "page" : undefined}
-                className={`rounded px-4 py-2.5 text-[14px] ${
+                className={`rounded-full px-4 py-2.5 text-[14px] transition-all ${
                   active
-                    ? "bg-[#1f1f1f] text-white"
-                    : "text-[#b3b3b3]"
+                    ? "bg-[#1f1f1f] text-white font-bold"
+                    : "text-[#b3b3b3] font-normal"
                 }`}
               >
                 {item.label}
@@ -237,7 +237,7 @@ function MobileDrawer({
             );
           })}
         </nav>
-        <div className="border-t border-[#272727] p-4">
+        <div className="p-4">
           <p className="text-[12px] text-[#7c7c7c]">접속 중</p>
           <p className="mt-0.5 text-[14px] text-white">{userName}</p>
           <Button
@@ -314,7 +314,7 @@ function GateShell({
 }) {
   return (
     <div className="flex min-h-screen flex-col items-center justify-center gap-6 bg-[#121212] px-5 text-center">
-      <div className="flex w-full max-w-sm flex-col items-center gap-4 rounded-md border border-[#272727] bg-[#181818] p-6">
+      <div className="flex w-full max-w-sm flex-col items-center gap-4 rounded-[8px] bg-[#181818] p-6">
         <h1 className="text-[17px] font-semibold text-white">{title}</h1>
         <p className="text-[13px] text-[#b3b3b3]">{description}</p>
         <p className="text-[13px] text-[#b3b3b3]">{userName}</p>

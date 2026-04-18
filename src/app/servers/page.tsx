@@ -80,13 +80,13 @@ export default function ServersPage() {
       </div>
 
       {error ? (
-        <div className="rounded-md border border-[#f3727f]/30 bg-[#f3727f]/10 px-4 py-3 text-[13px] text-[#f3727f]">
+        <div className="rounded-[8px] border border-[#f3727f]/30 bg-[#f3727f]/10 px-4 py-3 text-[13px] text-[#f3727f]">
           {error}
         </div>
       ) : null}
 
       {loading && !servers && !modes ? (
-        <div className="rounded-md bg-[#181818] p-8 text-center text-[13px] text-[#b3b3b3]">
+        <div className="rounded-[8px] bg-[#181818] p-8 text-center text-[13px] text-[#b3b3b3]">
           불러오는 중…
         </div>
       ) : null}
@@ -259,7 +259,7 @@ function Metric({
           ? "text-[#ffa42b]"
           : "text-white";
   return (
-    <div className="rounded-md border border-[#272727] bg-[#181818] px-4 py-3">
+    <div className="rounded-[8px] bg-[#181818] px-4 py-3">
       <p className="text-[12px] text-[#b3b3b3]">{label}</p>
       <p className={`mt-0.5 text-[18px] font-semibold ${accent}`}>{value}</p>
     </div>

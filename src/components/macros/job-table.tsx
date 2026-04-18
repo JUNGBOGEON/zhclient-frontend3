@@ -45,7 +45,7 @@ export function JobTable({
   lastUpdated?: number | null;
 }) {
   return (
-    <section className="rounded-md border border-[#272727] bg-[#181818]">
+    <section className="rounded-[8px] bg-[#181818]">
       <header className="flex items-center justify-between gap-3 border-b border-[#272727] px-5 py-3">
         <div>
           <h2 className="text-[15px] font-semibold text-white">내 작업</h2>

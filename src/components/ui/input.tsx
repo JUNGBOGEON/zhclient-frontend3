@@ -7,7 +7,6 @@ type TextInputProps = React.InputHTMLAttributes<HTMLInputElement> & {
   helper?: string;
   errorText?: string;
   icon?: React.ReactNode;
-  pill?: boolean;
 };
 
 export const TextInput = forwardRef<HTMLInputElement, TextInputProps>(
@@ -17,7 +16,6 @@ export const TextInput = forwardRef<HTMLInputElement, TextInputProps>(
       helper,
       errorText,
       icon,
-      pill = false,
       className = "",
       id,
       ...rest
@@ -34,20 +32,18 @@ export const TextInput = forwardRef<HTMLInputElement, TextInputProps>(
           </label>
         ) : null}
         <div
-          className={`relative flex items-center border border-[#3a3a3a] bg-[#1f1f1f] ${
-            pill ? "rounded-full" : "rounded-md"
-          } focus-within:border-[#5a5a5a]`}
+          className="relative flex items-center rounded-full bg-[#1f1f1f] shadow-[0px_1px_0px_#121212,inset_0px_0px_0px_1px_#7c7c7c] focus-within:shadow-[inset_0px_0px_0px_1px_#ffffff]"
         >
           {icon ? (
-            <span className="pointer-events-none absolute left-3 flex h-full items-center text-[#7c7c7c]">
+            <span className="pointer-events-none absolute left-4 flex h-full items-center text-[#7c7c7c]">
               {icon}
             </span>
           ) : null}
           <input
             ref={ref}
             id={inputId}
-            className={`h-9 w-full bg-transparent text-[14px] text-white placeholder:text-[#7c7c7c] outline-none ${
-              icon ? "pl-10 pr-3" : "px-3"
+            className={`h-11 w-full bg-transparent text-[14px] text-white placeholder:text-[#7c7c7c] outline-none ${
+              icon ? "pl-12 pr-4" : "px-4"
             } ${className}`}
             aria-invalid={errorText ? true : undefined}
             aria-describedby={errorText ? `${inputId}-error` : undefined}
@@ -74,7 +70,7 @@ export const PasswordInput = forwardRef<HTMLInputElement, PasswordInputProps>(
   },
 );
 
-type SearchInputProps = Omit<TextInputProps, "pill" | "icon"> & {
+type SearchInputProps = Omit<TextInputProps, "icon"> & {
   icon?: React.ReactNode;
 };
 

@@ -51,7 +51,7 @@ export default function LoginPage() {
     <div className="flex min-h-screen items-center justify-center bg-[#121212] px-5 py-10">
       <div className="flex w-full max-w-sm flex-col items-center gap-6">
         <BrandMark size="md" asLink={false} />
-        <div className="w-full rounded-md border border-[#272727] bg-[#181818] p-6">
+        <div className="w-full rounded-[8px] bg-[#181818] p-6">
           <h1 className="text-[18px] font-semibold text-white">로그인</h1>
           <p className="mt-1 text-[13px] text-[#b3b3b3]">
             Google 계정으로 계속 진행합니다.
@@ -60,7 +60,7 @@ export default function LoginPage() {
           <div className="mt-6 flex flex-col items-center gap-3">
             <div className="w-full">
               {submitting ? (
-                <div className="flex h-10 items-center justify-center rounded-md bg-[#1f1f1f] text-[13px] text-[#b3b3b3]">
+                <div className="flex h-10 items-center justify-center rounded-[8px] bg-[#1f1f1f] text-[13px] text-[#b3b3b3]">
                   <span
                     aria-hidden
                     style={{ animation: "zh-spin 0.75s linear infinite" }}

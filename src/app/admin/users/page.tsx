@@ -98,7 +98,7 @@ export default function AdminUsersPage() {
 
   if (!isAdmin) {
     return (
-      <div className="rounded-md bg-[#181818] p-8 text-center">
+      <div className="rounded-[8px] bg-[#181818] p-8 text-center">
         <p className="text-[15px] text-white">접근 권한이 없습니다.</p>
       </div>
     );
@@ -254,7 +254,7 @@ function Metric({
         ? "text-[#ffa42b]"
         : "text-[#f3727f]";
   return (
-    <div className="rounded-md border border-[#272727] bg-[#181818] px-4 py-3">
+    <div className="rounded-[8px] bg-[#181818] px-4 py-3">
       <p className="text-[12px] text-[#b3b3b3]">{label}</p>
       <p className={`mt-0.5 text-[20px] font-semibold ${accent}`}>
         {value.toLocaleString("ko-KR")}

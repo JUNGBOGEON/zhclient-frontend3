@@ -78,14 +78,14 @@ function ResultView({ state }: { state: ResultState }) {
   }
   if (state.state === "loading") {
     return (
-      <div className="rounded-md bg-[#181818] p-8 text-center text-[13px] text-[#b3b3b3]">
+      <div className="rounded-[8px] bg-[#181818] p-8 text-center text-[13px] text-[#b3b3b3]">
         조회 중…
       </div>
     );
   }
   if (state.state === "error") {
     return (
-      <div className="rounded-md border border-[#f3727f]/30 bg-[#f3727f]/10 px-4 py-3 text-[13px] text-[#f3727f]">
+      <div className="rounded-[8px] border border-[#f3727f]/30 bg-[#f3727f]/10 px-4 py-3 text-[13px] text-[#f3727f]">
         {state.message}
       </div>
     );
@@ -99,7 +99,7 @@ function PlayerCard({ player }: { player: PlayerProfile }) {
   const clanName = player.clan?.name ?? null;
   return (
     <div className="flex flex-col gap-5">
-      <section className="rounded-md border border-[#272727] bg-[#181818] p-5">
+      <section className="rounded-[8px] bg-[#181818] p-5">
         <div className="flex items-center gap-3">
           <h2 className="text-[22px] font-semibold text-white">
             {player.name}

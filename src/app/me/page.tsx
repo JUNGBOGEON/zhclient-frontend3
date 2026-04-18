@@ -62,7 +62,7 @@ export default function MePage() {
     <div className="flex flex-col gap-6">
       <h1 className="text-[20px] font-semibold text-white">내 프로필</h1>
 
-      <section className="flex items-center gap-4 rounded-md border border-[#272727] bg-[#181818] p-5">
+      <section className="flex items-center gap-4 rounded-[8px] bg-[#181818] p-5">
         {user.picture_url ? (
           // eslint-disable-next-line @next/next/no-img-element
           <img

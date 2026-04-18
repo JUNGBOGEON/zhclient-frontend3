@@ -61,7 +61,7 @@ export function Select({
         disabled={disabled}
         aria-haspopup="listbox"
         aria-expanded={open}
-        className="flex h-9 items-center justify-between rounded-md border border-[#3a3a3a] bg-[#1f1f1f] px-3 text-[14px] text-white transition-colors hover:border-[#5a5a5a] disabled:opacity-50"
+        className="flex h-11 items-center justify-between rounded-full bg-[#1f1f1f] px-4 text-[14px] text-white shadow-[0px_1px_0px_#121212,inset_0px_0px_0px_1px_#7c7c7c] transition-all hover:shadow-[inset_0px_0px_0px_1px_#ffffff] focus:shadow-[inset_0px_0px_0px_1px_#ffffff] disabled:opacity-50"
       >
         <span className={selected ? "text-white" : "text-[#7c7c7c]"}>
           {selected ? selected.label : placeholder}
@@ -85,7 +85,7 @@ export function Select({
       </button>
       {open ? (
         <div role="listbox" className="relative">
-          <ul className="absolute left-0 right-0 top-1 z-40 max-h-64 overflow-y-auto rounded-md border border-[#3a3a3a] bg-[#252525] p-1 shadow-lg">
+          <ul className="absolute left-0 right-0 top-2 z-40 max-h-64 overflow-y-auto rounded-[8px] bg-[#252525] p-1 shadow-[0_8px_24px_rgba(0,0,0,0.5)]">
 
             {options.map((opt) => {
               const active = opt.value === value;

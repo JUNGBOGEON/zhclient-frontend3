@@ -102,7 +102,7 @@ function ToastCard({
         animation: "zh-toast-in 200ms ease-out",
         boxShadow: "var(--shadow-heavy)",
       }}
-      className={`pointer-events-auto flex w-full max-w-sm items-start gap-3 rounded-xl border bg-[#181818] px-4 py-3 ${TONE_BORDER[entry.tone]}`}
+      className={`pointer-events-auto flex w-full max-w-sm items-start gap-3 rounded-[8px] border bg-[#181818] px-4 py-3 ${TONE_BORDER[entry.tone]}`}
     >
       <span
         className={`mt-[6px] h-2 w-2 shrink-0 rounded-full ${TONE_DOT[entry.tone]}`}
