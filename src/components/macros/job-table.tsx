@@ -142,6 +142,10 @@ export function JobTable({
 }
 
 function JobResultCell({ job }: { job: JobResponse }) {
+  const checks = extractChecks(job.result);
+  if (job.error && checks) {
+    return <ChecksView error={job.error} checks={checks} />;
+  }
   if (job.error) {
     return (
       <span className="line-clamp-2 text-[12px] text-[#f3727f]">
@@ -167,6 +171,88 @@ function JobResultCell({ job }: { job: JobResponse }) {
     <span className="text-[12px] text-[#7c7c7c]">
       {summariseResult(job.result) || "—"}
     </span>
+  );
+}
+
+type EligibilityCheck = {
+  name: string;
+  passed: boolean;
+  detail: string;
+};
+
+const CHECK_LABEL: Record<string, string> = {
+  preflight: "클라이언트 상태",
+  client_version: "클라 버전",
+  xigncode_cookie: "XIGNCODE 쿠키",
+  server_reachable: "서버 접속",
+  integrated_account: "통합계정 여부",
+  account_not_banned: "계정 정지 여부",
+  credentials: "아이디/비번",
+  character_exists: "캐릭터 존재",
+  slave_token: "부캐 토큰",
+  mineral_threshold: "미네랄 50,000+",
+  rename_cooldown: "닉변 쿨다운",
+};
+
+function extractChecks(
+  result: Record<string, unknown> | null,
+): EligibilityCheck[] | null {
+  if (!result) return null;
+  const raw = result["checks"];
+  if (!Array.isArray(raw)) return null;
+  const out: EligibilityCheck[] = [];
+  for (const c of raw) {
+    if (!c || typeof c !== "object") continue;
+    const entry = c as Record<string, unknown>;
+    const name = typeof entry["name"] === "string" ? entry["name"] : "";
+    if (!name) continue;
+    out.push({
+      name,
+      passed: Boolean(entry["passed"]),
+      detail: typeof entry["detail"] === "string" ? entry["detail"] : "",
+    });
+  }
+  return out.length > 0 ? out : null;
+}
+
+function ChecksView({
+  error,
+  checks,
+}: {
+  error: string;
+  checks: EligibilityCheck[];
+}) {
+  const failed = checks.filter((c) => !c.passed);
+  const passed = checks.filter((c) => c.passed);
+  return (
+    <details className="group">
+      <summary className="cursor-pointer list-none text-[12px] text-[#f3727f]">
+        <span className="line-clamp-2">{error}</span>
+        <span className="text-[11px] text-[#7c7c7c] group-open:hidden">
+          클릭해서 체크 상세 보기
+        </span>
+      </summary>
+      <div className="mt-1.5 flex flex-col gap-1 text-[11px]">
+        {failed.map((c) => (
+          <div key={c.name} className="flex items-start gap-1.5">
+            <span className="mt-0.5 text-[#f3727f]">✗</span>
+            <div className="min-w-0">
+              <span className="text-[#f3727f]">
+                {CHECK_LABEL[c.name] ?? c.name}
+              </span>
+              {c.detail ? (
+                <span className="ml-1 text-[#b3b3b3]">· {c.detail}</span>
+              ) : null}
+            </div>
+          </div>
+        ))}
+        {passed.length > 0 ? (
+          <div className="mt-0.5 text-[#7c7c7c]">
+            통과: {passed.map((c) => CHECK_LABEL[c.name] ?? c.name).join(", ")}
+          </div>
+        ) : null}
+      </div>
+    </details>
   );
 }
 
