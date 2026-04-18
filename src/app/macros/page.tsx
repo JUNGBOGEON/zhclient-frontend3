@@ -6,7 +6,7 @@ import {
   AccountManager,
   useStoredAccounts,
 } from "@/components/macros/account-manager";
-import { JobTable } from "@/components/macros/job-table";
+import { ActiveJobsCard, HistoryJobsCard } from "@/components/macros/job-table";
 import { SnipeControls } from "@/components/macros/snipe-controls";
 import { useToast } from "@/components/providers/toast-provider";
 import { Button } from "@/components/ui/button";
@@ -130,13 +130,15 @@ export default function MacrosPage() {
         onOpenAccounts={() => setDrawerOpen(true)}
       />
 
-      <JobTable
+      <ActiveJobsCard
         jobs={jobs}
         loading={jobsLoading}
         refreshing={refreshing}
         onRefresh={onManualRefresh}
         lastUpdated={lastUpdated}
       />
+
+      <HistoryJobsCard />
 
       <AccountManager
         open={drawerOpen}

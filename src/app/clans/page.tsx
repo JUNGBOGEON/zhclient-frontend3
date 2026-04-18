@@ -1,10 +1,7 @@
 "use client";
 
 import { useState } from "react";
-
-import { StatusDot } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { EmptyState, SectionCard, Skeleton } from "@/components/ui/card";
 import { SearchInput } from "@/components/ui/input";
 import { ApiError, api } from "@/lib/api";
 import { formatLastLogin, formatNumber } from "@/lib/format";
@@ -13,12 +10,12 @@ import type { ClanDetail, ClanSummary } from "@/types/api";
 type SearchState =
   | { state: "idle" }
   | { state: "loading" }
-  | { state: "result"; query: string; total: number; clans: ClanSummary[] }
+  | { state: "result"; query: string; total: number; clans: ClanSummary[]; page: number }
   | { state: "error"; message: string };
 
 type DetailState =
   | { state: "idle" }
-  | { state: "loading"; publicCode: string }
+  | { state: "loading"; publicCode: string; summaryName: string }
   | { state: "ready"; data: ClanDetail }
   | { state: "error"; message: string };
 
@@ -39,6 +36,7 @@ export default function ClansPage() {
         query: res.query,
         total: res.total,
         clans: res.clans,
+        page: 1,
       });
       if (res.clans.length === 1) {
         void openClan(res.clans[0]);
@@ -52,7 +50,7 @@ export default function ClansPage() {
   };
 
   const openClan = async (clan: ClanSummary) => {
-    setDetail({ state: "loading", publicCode: clan.public_code });
+    setDetail({ state: "loading", publicCode: clan.public_code, summaryName: clan.name });
     try {
       const data = await api.getClan(clan.public_code);
       setDetail({ state: "ready", data });
@@ -65,48 +63,67 @@ export default function ClansPage() {
     }
   };
 
-  return (
-    <div className="flex flex-col gap-6">
-      <h1 className="text-[20px] font-semibold text-white">클랜 검색</h1>
+  const goBack = () => {
+    setDetail({ state: "idle" });
+  };
 
+  if (detail.state !== "idle") {
+    return (
+      <div className="flex flex-col gap-6 pb-20">
+        <div>
+          <button
+            onClick={goBack}
+            className="group flex items-center gap-2 rounded-full bg-transparent px-2 py-2 text-[14px] font-bold text-[#b3b3b3] transition-colors hover:text-white"
+          >
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="transition-transform group-hover:-translate-x-1">
+              <path d="m15 18-6-6 6-6"/>
+            </svg>
+            검색 결과로 돌아가기
+          </button>
+        </div>
+        <ClanDetailView detail={detail} />
+      </div>
+    );
+  }
+
+  return (
+    <div className="flex flex-col gap-10 pb-20">
       <form
         onSubmit={(e) => {
           e.preventDefault();
           runSearch();
         }}
-        className="flex gap-2"
+        className="flex w-full max-w-2xl gap-3"
       >
         <div className="flex-1">
           <SearchInput
-            aria-label="클랜 이름"
-            placeholder="클랜 이름"
+            aria-label="어떤 클랜을 찾고 싶으신가요?"
+            placeholder="어떤 클랜을 찾고 싶으신가요?"
             value={query}
+            spellCheck={false}
             onChange={(e) => setQuery(e.target.value)}
           />
         </div>
         <Button
           type="submit"
+          size="md"
           disabled={!query.trim() || search.state === "loading"}
           loading={search.state === "loading"}
+          className="px-8"
         >
           검색
         </Button>
       </form>
 
-      <div className="grid gap-5 lg:grid-cols-[minmax(0,1fr)_minmax(0,1.4fr)]">
-        <ClanResults
-          search={search}
-          onSelect={openClan}
-          selectedCode={
-            detail.state === "loading"
-              ? detail.publicCode
-              : detail.state === "ready"
-                ? detail.data.public_code
-                : null
+      <ClanResults
+        search={search}
+        onSelect={openClan}
+        onChangePage={(newPage) => {
+          if (search.state === "result") {
+            setSearch({ ...search, page: newPage });
           }
-        />
-        <ClanDetailView detail={detail} />
-      </div>
+        }}
+      />
     </div>
   );
 }
@@ -114,189 +131,222 @@ export default function ClansPage() {
 function ClanResults({
   search,
   onSelect,
-  selectedCode,
+  onChangePage,
 }: {
   search: SearchState;
   onSelect: (clan: ClanSummary) => void;
-  selectedCode: string | null;
+  onChangePage: (page: number) => void;
 }) {
   if (search.state === "idle") {
-    return (
-      <SectionCard title="검색 결과">
-        <p className="text-[13px] text-[#7c7c7c]">검색어를 입력하세요.</p>
-      </SectionCard>
-    );
+    return null;
   }
   if (search.state === "loading") {
     return (
-      <SectionCard title="검색 중">
-        <div className="flex flex-col gap-2">
-          {Array.from({ length: 4 }).map((_, idx) => (
-            <Skeleton key={idx} className="h-14 w-full" />
-          ))}
-        </div>
-      </SectionCard>
+      <div className="py-20 text-center text-[15px] font-bold text-[#b3b3b3]">
+        클랜을 검색하는 중입니다...
+      </div>
     );
   }
   if (search.state === "error") {
     return (
-      <SectionCard title="검색 결과">
-        <p className="text-[13px] text-[#f3727f]">{search.message}</p>
-      </SectionCard>
+      <div className="py-20 text-center text-[15px] font-bold text-[#f3727f]">
+        {search.message}
+      </div>
     );
   }
   if (search.clans.length === 0) {
     return (
-      <SectionCard title="검색 결과">
-        <EmptyState
-          title="결과 없음"
-          description={`"${search.query}"에 해당하는 클랜이 없습니다.`}
-        />
-      </SectionCard>
+      <div className="py-20 text-center">
+        <h2 className="text-[24px] font-bold text-white">결과를 찾을 수 없습니다</h2>
+        <p className="mt-2 text-[14px] text-[#b3b3b3]">&quot;{search.query}&quot;에 해당하는 클랜이 없습니다.</p>
+      </div>
     );
   }
 
+  const PAGE_SIZE = 10;
+  const totalPages = Math.ceil(search.clans.length / PAGE_SIZE);
+  const startIdx = (search.page - 1) * PAGE_SIZE;
+  const currentClans = search.clans.slice(startIdx, startIdx + PAGE_SIZE);
+
   return (
-    <SectionCard
-      title="검색 결과"
-      description={`${formatNumber(search.total)}개`}
-      bodyClassName="p-0"
-    >
-      <ul className="divide-y divide-[#272727]">
-        {search.clans.map((clan) => {
-          const active = clan.public_code === selectedCode;
-          return (
-            <li key={clan.public_code}>
-              <button
-                type="button"
-                onClick={() => onSelect(clan)}
-                className={`flex w-full items-center justify-between gap-3 px-5 py-3 text-left transition-colors ${
-                  active ? "bg-[#1f1f1f]" : "hover:bg-[#1f1f1f]/60"
-                }`}
-              >
-                <div className="min-w-0 flex-1">
-                  <p className="truncate text-[14px] text-white">
-                    {clan.name}
-                    <span className="ml-2 text-[12px] text-[#7c7c7c]">
-                      Lv.{clan.level}
-                    </span>
-                  </p>
-                  <p className="mt-0.5 text-[12px] text-[#7c7c7c]">
-                    {clan.public_code} · 멤버{" "}
-                    {formatNumber(clan.member_count)}
-                    {clan.max_members
-                      ? ` / ${formatNumber(clan.max_members)}`
-                      : ""}
-                  </p>
-                </div>
-                {active ? (
-                  <span className="text-[11px] text-[#1ed760]">선택됨</span>
-                ) : null}
-              </button>
-            </li>
-          );
-        })}
-      </ul>
-    </SectionCard>
+    <div className="flex flex-col gap-6">
+      <h2 className="text-[20px] font-bold text-white">검색 결과 ({formatNumber(search.total)})</h2>
+      
+      <div className="flex flex-col">
+        <div className="flex items-center gap-4 px-4 py-2 text-[12px] font-bold uppercase tracking-[1.4px] text-[#b3b3b3]">
+          <div className="w-8 text-right">#</div>
+          <div className="flex-1">클랜명</div>
+          <div className="hidden w-32 md:block">클랜 코드</div>
+          <div className="w-20 text-right">멤버 수</div>
+        </div>
+        <div className="mb-2 h-[1px] w-full bg-[#272727]" />
+
+        <div className="flex flex-col gap-1">
+          {currentClans.map((clan, idx) => (
+            <button
+              key={clan.public_code}
+              type="button"
+              onClick={() => onSelect(clan)}
+              className="group flex items-center gap-4 rounded-[6px] px-4 py-3 text-left transition-colors hover:bg-[#1f1f1f]"
+            >
+              <div className="w-8 text-right text-[14px] text-[#b3b3b3]">
+                {startIdx + idx + 1}
+              </div>
+              <div className="min-w-0 flex-1">
+                <p className="truncate text-[15px] font-bold text-white transition-colors group-hover:text-[#1ed760]">
+                  {clan.name}
+                  <span className="ml-2 text-[12px] font-normal text-[#b3b3b3] group-hover:text-white/70">
+                    Lv.{clan.level}
+                  </span>
+                </p>
+              </div>
+              <div className="hidden w-32 text-[14px] text-[#b3b3b3] md:block">
+                {clan.public_code}
+              </div>
+              <div className="w-20 text-right text-[14px] text-[#b3b3b3]">
+                {formatNumber(clan.member_count)}
+                {clan.max_members ? ` / ${formatNumber(clan.max_members)}` : ""}
+              </div>
+            </button>
+          ))}
+        </div>
+      </div>
+
+      {totalPages > 1 && (
+        <div className="mt-8 flex items-center justify-center gap-4">
+          <Button
+            variant="ghost"
+            onClick={() => onChangePage(search.page - 1)}
+            disabled={search.page === 1}
+          >
+            이전
+          </Button>
+          <span className="text-[13px] font-bold text-[#b3b3b3]">
+            {search.page} / {totalPages}
+          </span>
+          <Button
+            variant="ghost"
+            onClick={() => onChangePage(search.page + 1)}
+            disabled={search.page === totalPages}
+          >
+            다음
+          </Button>
+        </div>
+      )}
+    </div>
   );
 }
 
 function ClanDetailView({ detail }: { detail: DetailState }) {
-  if (detail.state === "idle") {
-    return (
-      <SectionCard title="클랜 상세">
-        <p className="text-[13px] text-[#7c7c7c]">
-          결과에서 클랜을 선택하면 상세가 표시됩니다.
-        </p>
-      </SectionCard>
-    );
-  }
+  if (detail.state === "idle") return null;
   if (detail.state === "loading") {
     return (
-      <SectionCard title="클랜 상세">
-        <div className="flex flex-col gap-3">
-          <Skeleton className="h-6 w-1/2" />
-          <Skeleton className="h-20 w-full" />
-          <Skeleton className="h-32 w-full" />
-        </div>
-      </SectionCard>
+      <div className="py-20 text-center text-[15px] font-bold text-[#b3b3b3]">
+        {detail.summaryName} 클랜 정보를 불러오는 중입니다...
+      </div>
     );
   }
   if (detail.state === "error") {
     return (
-      <SectionCard title="클랜 상세">
-        <p className="text-[13px] text-[#f3727f]">{detail.message}</p>
-      </SectionCard>
+      <div className="py-20 text-center text-[15px] font-bold text-[#f3727f]">
+        {detail.message}
+      </div>
     );
   }
+  
   const { data } = detail;
   const onlineCount = data.members.filter((m) =>
     isOnline(m.last_login_ms),
   ).length;
+
   return (
-    <div className="flex flex-col gap-4">
-      <section className="rounded-[8px] bg-[#181818] p-5">
-        <h2 className="text-[20px] font-semibold text-white">{data.name}</h2>
-        <p className="mt-0.5 text-[12px] text-[#7c7c7c]">{data.public_code}</p>
-        <div className="mt-3 flex flex-wrap gap-x-5 gap-y-1 text-[13px] text-[#b3b3b3]">
-          <span>Lv.{data.level}</span>
-          <span>
+    <div className="flex flex-col gap-12">
+      <section className="flex flex-col gap-4 px-2">
+        <div className="flex flex-col gap-2">
+          <span className="text-[14px] font-bold uppercase tracking-[1.4px] text-[#7c7c7c]">
+            클랜
+          </span>
+          <h1 className="text-[48px] font-bold leading-tight tracking-tight text-white md:text-[64px] lg:text-[80px]">
+            {data.name}
+          </h1>
+        </div>
+        <div className="mt-2 flex flex-wrap items-center gap-x-6 gap-y-2 text-[14px] text-[#b3b3b3]">
+          <span className="font-bold text-white">Lv. {data.level}</span>
+          <span className="text-[#7c7c7c]">코드: {data.public_code}</span>
+          <span className="text-white">
             멤버 {formatNumber(data.member_count)}
             {data.max_members ? ` / ${formatNumber(data.max_members)}` : ""}
           </span>
-          <span>온라인 {onlineCount}명</span>
+          <span className="font-bold text-[#1ed760]">온라인 {onlineCount}명</span>
           {data.owner_name ? (
             <span className="text-[#7c7c7c]">오너 {data.owner_name}</span>
           ) : null}
         </div>
         {data.introduction ? (
-          <p className="mt-4 text-[13px] leading-relaxed text-[#cbcbcb]">
+          <p className="mt-4 max-w-3xl text-[14px] leading-relaxed text-[#b3b3b3]">
             {data.introduction}
           </p>
         ) : null}
       </section>
 
-      <SectionCard
-        title="멤버"
-        description={`${formatNumber(data.members.length)}명`}
-        bodyClassName="p-0"
-      >
-        <ul className="divide-y divide-[#272727]">
-          {data.members.map((member) => {
-            const last = formatLastLogin(member.last_login_ms ?? null);
-            const online = last.tone === "online";
-            return (
-              <li
-                key={member.account_id}
-                className="flex items-center gap-3 px-5 py-2.5"
-              >
-                <StatusDot tone={online ? "success" : "neutral"} />
-                <div className="flex flex-1 items-center justify-between gap-3">
-                  <div>
-                    <p className="text-[14px] text-white">{member.name}</p>
-                    <p className="text-[12px] text-[#7c7c7c]">
-                      Lv.{formatNumber(member.level)}
-                      {member.role ? ` · ${member.role}` : ""}
-                    </p>
+      <div className="flex flex-col gap-6">
+        <h2 className="text-[20px] font-bold text-white">멤버 목록</h2>
+        
+        <div className="flex flex-col">
+          <div className="flex items-center gap-4 px-4 py-2 text-[12px] font-bold uppercase tracking-[1.4px] text-[#b3b3b3]">
+            <div className="w-8 text-right">#</div>
+            <div className="flex-1">이름</div>
+            <div className="w-32 text-right">접속</div>
+          </div>
+          <div className="mb-2 h-[1px] w-full bg-[#272727]" />
+
+          <div className="flex flex-col gap-1">
+            {data.members.map((member, idx) => {
+              const last = formatLastLogin(member.last_login_ms ?? null);
+              const online = last.tone === "online";
+              return (
+                <div
+                  key={member.account_id}
+                  className="group flex items-center gap-4 rounded-[6px] px-4 py-3 transition-colors hover:bg-[#1f1f1f]"
+                >
+                  <div className="w-8 text-right text-[14px] text-[#b3b3b3]">
+                    {idx + 1}
                   </div>
-                  <span
-                    className={`text-[12px] ${
-                      online ? "text-[#1ed760]" : "text-[#7c7c7c]"
-                    }`}
-                  >
-                    {last.label}
-                  </span>
+                  <div className="flex min-w-0 flex-1 items-center gap-3">
+                    <span
+                      aria-hidden
+                      className={`inline-block h-2 w-2 shrink-0 rounded-full ${online ? "bg-[#1ed760]" : "bg-[#7c7c7c]"}`}
+                    />
+                    <div className="flex flex-col">
+                      <p className={`truncate text-[15px] font-bold ${online ? "text-white" : "text-[#b3b3b3]"}`}>
+                        {member.name}
+                      </p>
+                      <p className="text-[12px] text-[#7c7c7c]">
+                        Lv.{formatNumber(member.level)}
+                        {member.role ? ` · ${member.role}` : ""}
+                      </p>
+                    </div>
+                  </div>
+                  <div className="w-32 text-right">
+                    <span
+                      className={`text-[13px] ${
+                        online ? "font-bold text-[#1ed760]" : "text-[#7c7c7c]"
+                      }`}
+                    >
+                      {last.label}
+                    </span>
+                  </div>
                 </div>
-              </li>
-            );
-          })}
-          {data.members.length === 0 ? (
-            <li className="px-5 py-6 text-center text-[13px] text-[#7c7c7c]">
-              멤버가 없습니다.
-            </li>
-          ) : null}
-        </ul>
-      </SectionCard>
+              );
+            })}
+            {data.members.length === 0 ? (
+              <div className="px-4 py-6 text-center text-[14px] text-[#7c7c7c]">
+                멤버가 없습니다.
+              </div>
+            ) : null}
+          </div>
+        </div>
+      </div>
     </div>
   );
 }

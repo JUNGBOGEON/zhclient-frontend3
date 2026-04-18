@@ -9,6 +9,7 @@ import type {
   ClanSearchResponse,
   EligibilityRequest,
   EligibilityResponse,
+  HistoryResponse,
   JobResponse,
   MacroStatus,
   ModeStatus,
@@ -202,6 +203,30 @@ export const api = {
     request<JobResponse>(`/macros/${encodeURIComponent(id)}/cancel`, {
       method: "POST",
     }),
+  listMacroHistory: (opts: {
+    status?: MacroStatus[];
+    nickname?: string;
+    limit?: number;
+    offset?: number;
+  } = {}) => {
+    const q = new URLSearchParams();
+    (opts.status ?? []).forEach((s) => q.append("status", s));
+    if (opts.nickname) q.set("nickname", opts.nickname);
+    q.set("limit", String(opts.limit ?? 20));
+    q.set("offset", String(opts.offset ?? 0));
+    return request<HistoryResponse>(`/macros/history?${q.toString()}`);
+  },
+  deleteMacro: (id: string) =>
+    request<void>(`/macros/${encodeURIComponent(id)}`, { method: "DELETE" }),
+  deleteMacroHistory: (status?: MacroStatus[]) => {
+    const q = new URLSearchParams();
+    (status ?? []).forEach((s) => q.append("status", s));
+    const qs = q.toString();
+    return request<{ removed: number }>(
+      qs ? `/macros/history?${qs}` : "/macros/history",
+      { method: "DELETE" },
+    );
+  },
   adminListMacros: (status?: MacroStatus) => {
     const q = status ? `?status=${encodeURIComponent(status)}` : "";
     return request<JobResponse[]>(`/admin/macros${q}`);

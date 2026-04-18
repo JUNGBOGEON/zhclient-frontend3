@@ -153,6 +153,13 @@ export interface JobResponse {
   finished_at: string | null;
 }
 
+export interface HistoryResponse {
+  jobs: JobResponse[];
+  total: number;
+  limit: number;
+  offset: number;
+}
+
 export interface BadnameRequest {
   user_id: string;
   password: string;
