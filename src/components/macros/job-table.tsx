@@ -161,6 +161,10 @@ function JobResultCell({ job }: { job: JobResponse }) {
     );
   }
   if (job.status === "running") {
+    const live = extractLiveProgress(job.result);
+    if (live) {
+      return <LiveProgressView progress={live} />;
+    }
     return (
       <span className="text-[12px] text-[#b3b3b3]">
         {summariseResult(job.result) || "실행 중…"}
@@ -171,6 +175,116 @@ function JobResultCell({ job }: { job: JobResponse }) {
     <span className="text-[12px] text-[#7c7c7c]">
       {summariseResult(job.result) || "—"}
     </span>
+  );
+}
+
+type LiveProbes = {
+  total: number;
+  try_409: number;
+  try_300: number;
+  confirm_ok: number;
+  confirm_409: number;
+  captcha_fail: number;
+  error: number;
+};
+
+type LiveRecent = { t: number; kind: string; detail?: string };
+
+type LiveProgress = {
+  elapsed_s: number;
+  requested_rate: number;
+  actual_rate: number;
+  probes: LiveProbes;
+  recent: LiveRecent[];
+};
+
+const EVENT_LABEL: Record<string, { label: string; color: string }> = {
+  try_300: { label: "사용 가능 감지", color: "text-[#1ed760]" },
+  try_409: { label: "이미 사용중", color: "text-[#7c7c7c]" },
+  try_other: { label: "기타 응답", color: "text-[#7c7c7c]" },
+  confirm_ok: { label: "선점 성공", color: "text-[#1ed760]" },
+  confirm_409: { label: "타인 선점", color: "text-[#ffa42b]" },
+  captcha_fail: { label: "캡챠 실패", color: "text-[#ffa42b]" },
+  error: { label: "에러", color: "text-[#f3727f]" },
+};
+
+function extractLiveProgress(
+  result: Record<string, unknown> | null,
+): LiveProgress | null {
+  if (!result || result["live"] !== true) return null;
+  const probes = result["probes"] as LiveProbes | undefined;
+  const recent = result["recent"];
+  if (!probes) return null;
+  return {
+    elapsed_s: Number(result["elapsed_s"] ?? 0),
+    requested_rate: Number(result["requested_rate"] ?? 0),
+    actual_rate: Number(result["actual_rate"] ?? 0),
+    probes,
+    recent: Array.isArray(recent) ? (recent as LiveRecent[]) : [],
+  };
+}
+
+function LiveProgressView({ progress }: { progress: LiveProgress }) {
+  const p = progress.probes;
+  const mm = Math.floor(progress.elapsed_s / 60);
+  const ss = Math.floor(progress.elapsed_s % 60);
+  const elapsed = `${mm.toString().padStart(2, "0")}:${ss.toString().padStart(2, "0")}`;
+  return (
+    <details className="group" open>
+      <summary className="cursor-pointer list-none text-[12px] text-[#539df5]">
+        <div className="flex items-center gap-2">
+          <span
+            aria-hidden
+            style={{ animation: "zh-pulse-dot 1.6s ease-in-out infinite" }}
+            className="inline-block h-1.5 w-1.5 rounded-full bg-[#539df5]"
+          />
+          <span>
+            시도 {p.total}회 · 실측 {progress.actual_rate.toFixed(1)} / 설정{" "}
+            {progress.requested_rate.toFixed(1)} req/s · {elapsed}
+          </span>
+        </div>
+        <div className="mt-0.5 flex gap-3 text-[11px] text-[#7c7c7c]">
+          <span>try 300: {p.try_300}</span>
+          <span>try 409: {p.try_409}</span>
+          <span className={p.confirm_ok > 0 ? "text-[#1ed760]" : ""}>
+            confirm ok: {p.confirm_ok}
+          </span>
+          {p.confirm_409 > 0 ? (
+            <span className="text-[#ffa42b]">confirm 409: {p.confirm_409}</span>
+          ) : null}
+          {p.captcha_fail > 0 ? (
+            <span className="text-[#ffa42b]">
+              captcha fail: {p.captcha_fail}
+            </span>
+          ) : null}
+          {p.error > 0 ? (
+            <span className="text-[#f3727f]">err: {p.error}</span>
+          ) : null}
+        </div>
+      </summary>
+      {progress.recent.length > 0 ? (
+        <div className="mt-2 flex flex-col gap-0.5 text-[11px]">
+          {progress.recent
+            .slice()
+            .reverse()
+            .slice(0, 12)
+            .map((ev, idx) => {
+              const meta =
+                EVENT_LABEL[ev.kind] ?? { label: ev.kind, color: "text-[#cbcbcb]" };
+              const time = new Date(ev.t * 1000).toLocaleTimeString("ko-KR");
+              return (
+                <div key={idx} className="flex items-center gap-2">
+                  <span className="text-[#7c7c7c]">{time}</span>
+                  <span className={meta.color}>{meta.label}</span>
+                  {ev.detail ? (
+                    <span className="text-[#7c7c7c]">· {ev.detail}</span>
+                  ) : null}
+                </div>
+              );
+            })}
+        </div>
+      ) : null}
+    </details>
   );
 }
 

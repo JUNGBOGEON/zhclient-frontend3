@@ -55,7 +55,7 @@ const TABS: TabDef[] = [
   },
 ];
 
-const POLL_INTERVAL_MS = 3500;
+const POLL_INTERVAL_MS = 2000;
 
 export default function MacrosPage() {
   const toast = useToast();
