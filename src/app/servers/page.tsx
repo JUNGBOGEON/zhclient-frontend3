@@ -137,43 +137,71 @@ function ServerBoard({ data }: { data: ServerStatus }) {
         ) : (
           <ul className="divide-y divide-[#272727]">
             {data.servers.map((server) => (
-              <li
-                key={server.id}
-                className="flex items-center justify-between gap-3 px-5 py-3"
-              >
-                <div className="flex items-center gap-3">
-                  <StatusDot tone={server.joinable ? "success" : "danger"} />
-                  <div>
-                    <p className="text-[14px] text-white">{server.name}</p>
-                    <p className="text-[12px] text-[#7c7c7c]">
-                      {server.region ? `${server.region} · ` : ""}
-                      {server.status}
-                    </p>
-                  </div>
-                </div>
-                <div className="flex items-center gap-3 text-[12px] text-[#7c7c7c]">
-                  {typeof server.population === "number" ? (
-                    <span>
-                      {formatNumber(server.population)}
-                      {typeof server.capacity === "number"
-                        ? ` / ${formatNumber(server.capacity)}`
-                        : ""}
-                    </span>
-                  ) : null}
-                  <span
-                    className={
-                      server.joinable ? "text-[#1ed760]" : "text-[#f3727f]"
-                    }
-                  >
-                    {server.joinable ? "가능" : "불가"}
-                  </span>
-                </div>
-              </li>
+              <ServerRow key={server.server_id} server={server} />
             ))}
           </ul>
         )}
       </SectionCard>
     </div>
+  );
+}
+
+function ServerRow({ server }: { server: import("@/types/api").ServerEntry }) {
+  const entries = Object.entries(server.raw);
+  return (
+    <li className="flex flex-col gap-2 px-5 py-3">
+      <div className="flex items-center justify-between gap-3">
+        <div className="flex items-center gap-3">
+          <StatusDot tone={server.joinable ? "success" : "danger"} />
+          <div>
+            <p className="text-[14px] text-white">{server.name}</p>
+            <p className="text-[12px] text-[#7c7c7c]">
+              {server.server_id} · {server.ip}:{server.port}
+            </p>
+          </div>
+        </div>
+        <div className="flex items-center gap-3 text-[12px] text-[#7c7c7c]">
+          <span>
+            {formatNumber(server.user_count)} /{" "}
+            {formatNumber(server.max_user_count)}
+          </span>
+          <span
+            className={
+              server.joinable ? "text-[#1ed760]" : "text-[#f3727f]"
+            }
+          >
+            {server.joinable ? "가능" : "불가"}
+          </span>
+        </div>
+      </div>
+      {entries.length > 0 ? (
+        <dl className="ml-5 grid grid-cols-[max-content_1fr] gap-x-3 gap-y-0.5 text-[11px]">
+          {entries.map(([key, value]) => (
+            <RawField key={key} name={key} value={value} />
+          ))}
+        </dl>
+      ) : null}
+      {server.inspection && server.under_inspection ? (
+        <p className="ml-5 text-[12px] text-[#ffa42b]">
+          공지: {server.inspection}
+        </p>
+      ) : null}
+    </li>
+  );
+}
+
+function RawField({ name, value }: { name: string; value: unknown }) {
+  const rendered =
+    value === null || value === undefined
+      ? "—"
+      : typeof value === "object"
+        ? JSON.stringify(value)
+        : String(value);
+  return (
+    <>
+      <dt className="text-[#7c7c7c]">{name}</dt>
+      <dd className="break-all font-mono text-[#cbcbcb]">{rendered}</dd>
+    </>
   );
 }
 

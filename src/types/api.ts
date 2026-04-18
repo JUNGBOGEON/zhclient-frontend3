@@ -79,13 +79,16 @@ export interface PlayerWallet {
 }
 
 export interface ServerEntry {
-  id: string;
+  server_id: string;
   name: string;
-  region?: string;
-  status: string;
+  ip: string;
+  port: number;
+  user_count: number;
+  max_user_count: number;
+  inspection: string;
+  under_inspection: boolean;
   joinable: boolean;
-  population?: number;
-  capacity?: number;
+  raw: Record<string, unknown>;
 }
 
 export interface ServerStatus {
