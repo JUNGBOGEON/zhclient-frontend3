@@ -3,10 +3,7 @@
 import { useCallback, useState, useSyncExternalStore } from "react";
 
 import { Button } from "@/components/ui/button";
-import { EmptyState } from "@/components/ui/card";
 import { PasswordInput, TextInput } from "@/components/ui/input";
-import { Select } from "@/components/ui/select";
-import { Badge } from "@/components/ui/badge";
 import { useToast } from "@/components/providers/toast-provider";
 import {
   loadAccounts,
@@ -49,7 +46,6 @@ function AccountManagerBody({
   const [label, setLabel] = useState("");
   const [userId, setUserId] = useState("");
   const [password, setPassword] = useState("");
-  const [slaveIndex, setSlaveIndex] = useState<number>(0);
 
   const handleAdd = () => {
     if (!userId.trim() || !password) {
@@ -61,7 +57,6 @@ function AccountManagerBody({
       label: label.trim() || userId.trim(),
       user_id: userId.trim(),
       password,
-      slave_index: slaveIndex,
       created_at: new Date().toISOString(),
     };
     const updated = upsertAccount(accounts, next);
@@ -69,7 +64,6 @@ function AccountManagerBody({
     setLabel("");
     setUserId("");
     setPassword("");
-    setSlaveIndex(0);
     toast.show(`${next.label} 저장됨`, "success");
   };
 
@@ -81,27 +75,21 @@ function AccountManagerBody({
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 px-4 py-10">
-      <div
-        className="relative w-full max-w-xl rounded-2xl bg-[#181818] p-6 sm:p-8"
-        style={{ boxShadow: "var(--shadow-heavy)" }}
-      >
+      <div className="relative w-full max-w-lg rounded-md border border-[#272727] bg-[#181818] p-6">
         <button
           type="button"
           aria-label="닫기"
           onClick={() => onOpenChange(false)}
-          className="absolute right-4 top-4 inline-flex h-9 w-9 items-center justify-center rounded-full bg-[#1f1f1f] text-white"
+          className="absolute right-3 top-3 inline-flex h-8 w-8 items-center justify-center rounded text-[#b3b3b3] hover:text-white"
         >
           ×
         </button>
-        <h2 className="text-[22px] font-bold tracking-tight text-white">
-          연동 계정 관리
-        </h2>
-        <p className="mt-1 text-[13px] text-[#b3b3b3]">
-          자주 사용하는 매크로 계정을 저장하면 폼에서 빠르게 선택할 수 있습니다.
+        <h2 className="text-[17px] font-semibold text-white">계정 관리</h2>
+        <p className="mt-1 text-[12px] text-[#7c7c7c]">
           비밀번호는 이 브라우저의 localStorage 에만 저장됩니다.
         </p>
 
-        <div className="mt-5 flex flex-col gap-4">
+        <div className="mt-5 flex flex-col gap-3">
           <TextInput
             label="라벨"
             placeholder="예: 부캐 1 / 메인"
@@ -123,15 +111,6 @@ function AccountManagerBody({
               onChange={(e) => setPassword(e.target.value)}
             />
           </div>
-          <Select
-            label="기본 부캐 슬롯"
-            value={slaveIndex}
-            onChange={(v) => setSlaveIndex(Number(v))}
-            options={[0, 1, 2, 3].map((n) => ({
-              value: n,
-              label: `슬롯 ${n}`,
-            }))}
-          />
           <div className="flex justify-end gap-2">
             <Button variant="outline" onClick={() => onOpenChange(false)}>
               닫기
@@ -141,40 +120,36 @@ function AccountManagerBody({
         </div>
 
         <div className="mt-6">
-          <h3 className="text-[13px] font-bold uppercase tracking-[1.6px] text-[#7c7c7c]">
+          <h3 className="text-[13px] text-[#b3b3b3]">
             저장된 계정 ({accounts.length})
           </h3>
-          <div className="mt-3">
+          <div className="mt-2">
             {accounts.length === 0 ? (
-              <EmptyState
-                title="저장된 계정이 없습니다"
-                description="위 폼에서 계정을 추가해 보세요."
-              />
+              <p className="rounded border border-dashed border-[#2a2a2a] px-4 py-6 text-center text-[13px] text-[#7c7c7c]">
+                저장된 계정이 없습니다.
+              </p>
             ) : (
-              <ul className="flex flex-col gap-2">
+              <ul className="flex flex-col gap-1">
                 {accounts.map((acct) => (
                   <li
                     key={acct.id}
-                    className="flex items-center justify-between gap-3 rounded-lg bg-[#1f1f1f] px-4 py-3"
+                    className="flex items-center justify-between gap-3 rounded border border-[#272727] px-3 py-2"
                   >
-                    <div className="flex flex-col">
-                      <p className="text-[14px] font-bold text-white">
+                    <div className="min-w-0">
+                      <p className="truncate text-[13px] text-white">
                         {acct.label}
                       </p>
-                      <p className="text-[12px] text-[#b3b3b3]">
-                        {acct.user_id} · 슬롯 {acct.slave_index}
+                      <p className="truncate text-[12px] text-[#7c7c7c]">
+                        {acct.user_id} · {formatSince(acct.created_at)}
                       </p>
                     </div>
-                    <div className="flex items-center gap-2">
-                      <Badge tone="mute">{formatSince(acct.created_at)}</Badge>
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        onClick={() => handleRemove(acct.id)}
-                      >
-                        삭제
-                      </Button>
-                    </div>
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => handleRemove(acct.id)}
+                    >
+                      삭제
+                    </Button>
                   </li>
                 ))}
               </ul>

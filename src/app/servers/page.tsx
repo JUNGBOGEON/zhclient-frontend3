@@ -2,7 +2,7 @@
 
 import { useCallback, useEffect, useState } from "react";
 
-import { Badge, StatusDot } from "@/components/ui/badge";
+import { StatusDot } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { EmptyState, SectionCard } from "@/components/ui/card";
 import { ApiError, api } from "@/lib/api";
@@ -59,45 +59,34 @@ export default function ServersPage() {
   }, []);
 
   return (
-    <div className="flex flex-col gap-8">
-      <header className="flex flex-col gap-3 lg:flex-row lg:items-end lg:justify-between">
-        <div>
-          <p className="text-[12px] font-bold uppercase tracking-[1.8px] text-[#1ed760]">
-            SERVER STATUS
-          </p>
-          <h1 className="text-[32px] font-bold tracking-tight text-white sm:text-[40px]">
-            서버 & 모드 현황
-          </h1>
-          <p className="mt-2 max-w-xl text-[15px] leading-relaxed text-[#b3b3b3]">
-            서버 점검 공지와 모드 차단 상태를 20초 간격으로 자동 갱신합니다.
-          </p>
-        </div>
-        <div className="flex items-center gap-3">
+    <div className="flex flex-col gap-6">
+      <div className="flex items-center justify-between gap-3">
+        <h1 className="text-[20px] font-semibold text-white">서버 상태</h1>
+        <div className="flex items-center gap-3 text-[12px] text-[#7c7c7c]">
           {lastUpdated ? (
-            <span className="text-[12px] text-[#b3b3b3]">
-              마지막 업데이트 {new Date(lastUpdated).toLocaleTimeString("ko-KR")}
+            <span>
+              업데이트 {new Date(lastUpdated).toLocaleTimeString("ko-KR")}
             </span>
           ) : null}
           <Button
             variant="secondary"
             size="sm"
-            uppercase
             loading={refreshing}
             onClick={load}
           >
-            다시 불러오기
+            새로고침
           </Button>
         </div>
-      </header>
+      </div>
 
       {error ? (
-        <div className="rounded-xl border border-[#f3727f]/30 bg-[#f3727f]/10 px-5 py-4 text-[13px] font-semibold text-[#f3727f]">
+        <div className="rounded-md border border-[#f3727f]/30 bg-[#f3727f]/10 px-4 py-3 text-[13px] text-[#f3727f]">
           {error}
         </div>
       ) : null}
 
       {loading && !servers && !modes ? (
-        <div className="rounded-xl bg-[#181818] p-10 text-center text-[14px] text-[#b3b3b3]">
+        <div className="rounded-md bg-[#181818] p-8 text-center text-[13px] text-[#b3b3b3]">
           불러오는 중…
         </div>
       ) : null}
@@ -110,32 +99,30 @@ export default function ServersPage() {
 
 function ServerBoard({ data }: { data: ServerStatus }) {
   return (
-    <div className="flex flex-col gap-5">
-      <div className="grid gap-4 sm:grid-cols-3">
+    <div className="flex flex-col gap-4">
+      <div className="grid gap-3 sm:grid-cols-3">
         <Metric
-          label="점검 상태"
+          label="점검"
           value={data.under_maintenance ? "점검중" : "정상"}
           tone={data.under_maintenance ? "warning" : "success"}
         />
         <Metric
-          label="입장 가능 서버"
+          label="입장 가능"
           value={`${formatNumber(data.joinable_count)}개`}
-          tone="info"
         />
         <Metric
-          label="공지 메시지"
+          label="공지"
           value={`${formatNumber(data.inspection_messages.length)}건`}
-          tone="neutral"
         />
       </div>
 
       {data.inspection_messages.length ? (
-        <SectionCard title="점검 / 공지 메시지">
-          <ul className="flex flex-col gap-3">
+        <SectionCard title="공지">
+          <ul className="flex flex-col gap-2">
             {data.inspection_messages.map((msg, idx) => (
               <li
                 key={idx}
-                className="rounded-lg border border-[#ffa42b]/20 bg-[#ffa42b]/5 px-4 py-3 text-[13px] text-[#ffa42b]"
+                className="rounded border border-[#ffa42b]/20 bg-[#ffa42b]/5 px-3 py-2 text-[13px] text-[#ffa42b]"
               >
                 {msg}
               </li>
@@ -144,7 +131,7 @@ function ServerBoard({ data }: { data: ServerStatus }) {
         </SectionCard>
       ) : null}
 
-      <SectionCard title="서버 목록" bodyClassName="p-0">
+      <SectionCard title="서버" bodyClassName="p-0">
         {data.servers.length === 0 ? (
           <EmptyState title="서버 정보가 없습니다" />
         ) : (
@@ -152,35 +139,34 @@ function ServerBoard({ data }: { data: ServerStatus }) {
             {data.servers.map((server) => (
               <li
                 key={server.id}
-                className="flex items-center justify-between gap-3 px-6 py-4"
+                className="flex items-center justify-between gap-3 px-5 py-3"
               >
                 <div className="flex items-center gap-3">
-                  <StatusDot
-                    tone={server.joinable ? "success" : "danger"}
-                    pulse={server.joinable}
-                  />
+                  <StatusDot tone={server.joinable ? "success" : "danger"} />
                   <div>
-                    <p className="text-[14px] font-bold text-white">
-                      {server.name}
-                    </p>
-                    <p className="text-[12px] text-[#b3b3b3]">
+                    <p className="text-[14px] text-white">{server.name}</p>
+                    <p className="text-[12px] text-[#7c7c7c]">
                       {server.region ? `${server.region} · ` : ""}
-                      상태 {server.status}
+                      {server.status}
                     </p>
                   </div>
                 </div>
-                <div className="flex items-center gap-2">
+                <div className="flex items-center gap-3 text-[12px] text-[#7c7c7c]">
                   {typeof server.population === "number" ? (
-                    <Badge tone="mute">
+                    <span>
                       {formatNumber(server.population)}
                       {typeof server.capacity === "number"
                         ? ` / ${formatNumber(server.capacity)}`
                         : ""}
-                    </Badge>
+                    </span>
                   ) : null}
-                  <Badge tone={server.joinable ? "success" : "danger"}>
-                    {server.joinable ? "입장 가능" : "입장 불가"}
-                  </Badge>
+                  <span
+                    className={
+                      server.joinable ? "text-[#1ed760]" : "text-[#f3727f]"
+                    }
+                  >
+                    {server.joinable ? "가능" : "불가"}
+                  </span>
                 </div>
               </li>
             ))}
@@ -193,26 +179,22 @@ function ServerBoard({ data }: { data: ServerStatus }) {
 
 function ModeBoard({ data }: { data: ModeStatus }) {
   return (
-    <div className="flex flex-col gap-5">
-      <div className="grid gap-4 sm:grid-cols-3">
+    <div className="flex flex-col gap-4">
+      <div className="grid gap-3 sm:grid-cols-3">
+        <Metric label="전체 모드" value={`${formatNumber(data.total)}개`} />
         <Metric
-          label="전체 모드"
-          value={`${formatNumber(data.total)}개`}
-          tone="neutral"
-        />
-        <Metric
-          label="차단된 모드"
+          label="차단"
           value={`${formatNumber(data.blocked_count)}개`}
           tone="danger"
         />
         <Metric
-          label="점검중 모드"
+          label="점검"
           value={`${formatNumber(data.inspected_count)}개`}
           tone="warning"
         />
       </div>
 
-      <SectionCard title="모드별 상태" bodyClassName="p-0">
+      <SectionCard title="모드" bodyClassName="p-0">
         {data.modes.length === 0 ? (
           <EmptyState title="모드 정보가 없습니다" />
         ) : (
@@ -220,7 +202,7 @@ function ModeBoard({ data }: { data: ModeStatus }) {
             {data.modes.map((mode) => (
               <li
                 key={mode.id}
-                className="flex items-center justify-between gap-3 px-6 py-4"
+                className="flex items-center justify-between gap-3 px-5 py-3"
               >
                 <div className="flex items-center gap-3">
                   <StatusDot
@@ -233,23 +215,23 @@ function ModeBoard({ data }: { data: ModeStatus }) {
                     }
                   />
                   <div>
-                    <p className="text-[14px] font-bold text-white">
-                      {mode.name}
-                    </p>
+                    <p className="text-[14px] text-white">{mode.name}</p>
                     {mode.note ? (
-                      <p className="text-[12px] text-[#b3b3b3]">{mode.note}</p>
+                      <p className="text-[12px] text-[#7c7c7c]">{mode.note}</p>
                     ) : null}
                   </div>
                 </div>
-                <div className="flex gap-2">
-                  {mode.blocked ? <Badge tone="danger">차단</Badge> : null}
-                  {mode.inspected ? (
-                    <Badge tone="warning">점검중</Badge>
-                  ) : null}
-                  {!mode.blocked && !mode.inspected ? (
-                    <Badge tone="success">정상</Badge>
-                  ) : null}
-                </div>
+                <span
+                  className={`text-[12px] ${
+                    mode.blocked
+                      ? "text-[#f3727f]"
+                      : mode.inspected
+                        ? "text-[#ffa42b]"
+                        : "text-[#1ed760]"
+                  }`}
+                >
+                  {mode.blocked ? "차단" : mode.inspected ? "점검" : "정상"}
+                </span>
               </li>
             ))}
           </ul>
@@ -262,11 +244,11 @@ function ModeBoard({ data }: { data: ModeStatus }) {
 function Metric({
   label,
   value,
-  tone,
+  tone = "neutral",
 }: {
   label: string;
   value: string;
-  tone: "success" | "danger" | "warning" | "info" | "neutral";
+  tone?: "success" | "danger" | "warning" | "neutral";
 }) {
   const accent =
     tone === "success"
@@ -275,15 +257,11 @@ function Metric({
         ? "text-[#f3727f]"
         : tone === "warning"
           ? "text-[#ffa42b]"
-          : tone === "info"
-            ? "text-[#539df5]"
-            : "text-white";
+          : "text-white";
   return (
-    <div className="rounded-xl bg-[#181818] px-5 py-4">
-      <p className="text-[11px] font-bold uppercase tracking-[1.6px] text-[#7c7c7c]">
-        {label}
-      </p>
-      <p className={`mt-1 text-[24px] font-bold ${accent}`}>{value}</p>
+    <div className="rounded-md border border-[#272727] bg-[#181818] px-4 py-3">
+      <p className="text-[12px] text-[#b3b3b3]">{label}</p>
+      <p className={`mt-0.5 text-[18px] font-semibold ${accent}`}>{value}</p>
     </div>
   );
 }

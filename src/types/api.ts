@@ -169,14 +169,22 @@ export interface SnipeRequest {
   nickname: string;
   slave_index?: number;
   rate_per_second?: number;
-  max_duration_seconds?: number;
   idempotency_key?: string;
+}
+
+export interface CharacterEntry {
+  slave_index: number;
+  name: string;
+  level: number;
+}
+
+export interface CharacterProbeResponse {
+  slaves: CharacterEntry[];
 }
 
 export interface EligibilityRequest {
   user_id: string;
   password: string;
-  slave_index?: number;
 }
 
 export interface StoredAccount {
@@ -184,6 +192,5 @@ export interface StoredAccount {
   label: string;
   user_id: string;
   password: string;
-  slave_index: number;
   created_at: string;
 }

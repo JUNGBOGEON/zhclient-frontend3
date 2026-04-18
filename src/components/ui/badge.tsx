@@ -7,28 +7,24 @@ type BadgeTone =
   | "mute";
 
 const TONES: Record<BadgeTone, string> = {
-  neutral: "bg-[#1f1f1f] text-white",
+  neutral: "bg-[#2a2a2a] text-[#e5e5e5]",
   success: "bg-[#1ed760]/15 text-[#1ed760]",
   danger: "bg-[#f3727f]/15 text-[#f3727f]",
   warning: "bg-[#ffa42b]/15 text-[#ffa42b]",
   info: "bg-[#539df5]/15 text-[#539df5]",
-  mute: "bg-[#181818] text-[#b3b3b3]",
+  mute: "bg-[#1f1f1f] text-[#b3b3b3]",
 };
 
 export function Badge({
   tone = "neutral",
   children,
-  uppercase = false,
 }: {
   tone?: BadgeTone;
   children: React.ReactNode;
-  uppercase?: boolean;
 }) {
   return (
     <span
-      className={`inline-flex items-center rounded-full px-2.5 py-1 text-[11px] font-semibold leading-none ${
-        uppercase ? "uppercase tracking-[1.2px]" : ""
-      } ${TONES[tone]}`}
+      className={`inline-flex items-center rounded px-2 py-0.5 text-[11px] font-medium leading-[1.4] ${TONES[tone]}`}
     >
       {children}
     </span>
@@ -37,7 +33,6 @@ export function Badge({
 
 export function StatusDot({
   tone = "neutral",
-  pulse = false,
 }: {
   tone?: "success" | "danger" | "warning" | "info" | "neutral";
   pulse?: boolean;
@@ -55,12 +50,7 @@ export function StatusDot({
   return (
     <span
       aria-hidden
-      style={
-        pulse
-          ? { animation: "zh-pulse-dot 1.6s ease-in-out infinite" }
-          : undefined
-      }
-      className={`inline-block h-2 w-2 shrink-0 rounded-full ${color}`}
+      className={`inline-block h-1.5 w-1.5 shrink-0 rounded-full ${color}`}
     />
   );
 }

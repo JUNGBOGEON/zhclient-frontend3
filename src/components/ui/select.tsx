@@ -48,12 +48,9 @@ export function Select({
   const selected = options.find((o) => o.value === value);
 
   return (
-    <div className={`flex flex-col gap-1.5 ${className}`} ref={ref}>
+    <div className={`flex flex-col gap-1 ${className}`} ref={ref}>
       {label ? (
-        <label
-          htmlFor={id}
-          className="text-[12px] font-bold uppercase tracking-[1.6px] text-[#b3b3b3]"
-        >
+        <label htmlFor={id} className="text-[13px] text-[#b3b3b3]">
           {label}
         </label>
       ) : null}
@@ -64,11 +61,7 @@ export function Select({
         disabled={disabled}
         aria-haspopup="listbox"
         aria-expanded={open}
-        className="flex h-12 items-center justify-between rounded-md bg-[#1f1f1f] px-4 text-[14px] font-medium text-white transition-colors hover:bg-[#2a2a2a] disabled:opacity-50"
-        style={{
-          boxShadow:
-            "rgb(18,18,18) 0px 1px 0px, rgb(124,124,124) 0px 0px 0px 1px inset",
-        }}
+        className="flex h-9 items-center justify-between rounded-md border border-[#3a3a3a] bg-[#1f1f1f] px-3 text-[14px] text-white transition-colors hover:border-[#5a5a5a] disabled:opacity-50"
       >
         <span className={selected ? "text-white" : "text-[#7c7c7c]"}>
           {selected ? selected.label : placeholder}
@@ -91,14 +84,9 @@ export function Select({
         </svg>
       </button>
       {open ? (
-        <div
-          role="listbox"
-          style={{ boxShadow: "var(--shadow-heavy)" }}
-          className="relative"
-        >
-          <ul
-            className="absolute left-0 right-0 top-1 z-40 max-h-64 overflow-y-auto rounded-md bg-[#282828] p-1"
-          >
+        <div role="listbox" className="relative">
+          <ul className="absolute left-0 right-0 top-1 z-40 max-h-64 overflow-y-auto rounded-md border border-[#3a3a3a] bg-[#252525] p-1 shadow-lg">
+
             {options.map((opt) => {
               const active = opt.value === value;
               return (
@@ -110,10 +98,10 @@ export function Select({
                     onChange(opt.value);
                     setOpen(false);
                   }}
-                  className={`flex cursor-pointer items-center justify-between rounded px-3 py-2.5 text-[13px] font-medium transition-colors ${
+                  className={`flex cursor-pointer items-center justify-between rounded px-3 py-2 text-[13px] transition-colors ${
                     active
-                      ? "bg-[#1f1f1f] text-white"
-                      : "text-[#cbcbcb] hover:bg-[#1f1f1f] hover:text-white"
+                      ? "bg-[#333333] text-white"
+                      : "text-[#cbcbcb] hover:bg-[#2a2a2a] hover:text-white"
                   }`}
                 >
                   <span>{opt.label}</span>

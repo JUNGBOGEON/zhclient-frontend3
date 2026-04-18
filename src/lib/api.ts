@@ -1,6 +1,7 @@
 import type {
   AuthGoogleResponse,
   BadnameRequest,
+  CharacterProbeResponse,
   CharacterRequest,
   ClanDetail,
   ClanSearchResponse,
@@ -118,6 +119,11 @@ export const api = {
   getPlayer: (name: string) =>
     request<PlayerProfile>(`/players/${encodeURIComponent(name)}`),
   getMyWallet: () => request<PlayerWallet>("/players/me/wallet"),
+  probeCharacters: (body: { user_id: string; password: string }) =>
+    request<CharacterProbeResponse>("/players/characters/probe", {
+      method: "POST",
+      body: JSON.stringify(body),
+    }),
 
   searchClans: (name: string) =>
     request<ClanSearchResponse>(

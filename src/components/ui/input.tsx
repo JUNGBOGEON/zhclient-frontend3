@@ -27,34 +27,27 @@ export const TextInput = forwardRef<HTMLInputElement, TextInputProps>(
     const autoId = useId();
     const inputId = id || autoId;
     return (
-      <div className="flex flex-col gap-1.5">
+      <div className="flex flex-col gap-1">
         {label ? (
-          <label
-            htmlFor={inputId}
-            className="text-[12px] font-bold uppercase tracking-[1.6px] text-[#b3b3b3]"
-          >
+          <label htmlFor={inputId} className="text-[13px] text-[#b3b3b3]">
             {label}
           </label>
         ) : null}
         <div
-          className={`relative flex items-center bg-[#1f1f1f] ${
+          className={`relative flex items-center border border-[#3a3a3a] bg-[#1f1f1f] ${
             pill ? "rounded-full" : "rounded-md"
-          } transition-all focus-within:bg-[#2a2a2a]`}
-          style={{
-            boxShadow:
-              "rgb(18,18,18) 0px 1px 0px, rgb(124,124,124) 0px 0px 0px 1px inset",
-          }}
+          } focus-within:border-[#5a5a5a]`}
         >
           {icon ? (
-            <span className="pointer-events-none absolute left-4 flex h-full items-center text-[#b3b3b3]">
+            <span className="pointer-events-none absolute left-3 flex h-full items-center text-[#7c7c7c]">
               {icon}
             </span>
           ) : null}
           <input
             ref={ref}
             id={inputId}
-            className={`h-12 w-full bg-transparent py-3 text-[15px] font-medium text-white placeholder:text-[#7c7c7c] outline-none ${
-              icon ? "pl-12 pr-5" : "px-5"
+            className={`h-9 w-full bg-transparent text-[14px] text-white placeholder:text-[#7c7c7c] outline-none ${
+              icon ? "pl-10 pr-3" : "px-3"
             } ${className}`}
             aria-invalid={errorText ? true : undefined}
             aria-describedby={errorText ? `${inputId}-error` : undefined}
@@ -62,14 +55,11 @@ export const TextInput = forwardRef<HTMLInputElement, TextInputProps>(
           />
         </div>
         {errorText ? (
-          <p
-            id={`${inputId}-error`}
-            className="text-[12px] font-medium text-[#f3727f]"
-          >
+          <p id={`${inputId}-error`} className="text-[12px] text-[#f3727f]">
             {errorText}
           </p>
         ) : helper ? (
-          <p className="text-[12px] text-[#b3b3b3]">{helper}</p>
+          <p className="text-[12px] text-[#7c7c7c]">{helper}</p>
         ) : null}
       </div>
     );
@@ -91,12 +81,11 @@ type SearchInputProps = Omit<TextInputProps, "pill" | "icon"> & {
 export function SearchInput({ icon, ...rest }: SearchInputProps) {
   return (
     <TextInput
-      pill
       icon={
         icon ?? (
           <svg
-            width="18"
-            height="18"
+            width="16"
+            height="16"
             viewBox="0 0 24 24"
             fill="none"
             stroke="currentColor"

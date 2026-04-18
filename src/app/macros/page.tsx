@@ -11,9 +11,9 @@ import {
   CredentialFields,
 } from "@/components/macros/credential-fields";
 import { JobTable } from "@/components/macros/job-table";
+import { SlavePicker } from "@/components/macros/slave-picker";
 import { SnipeControls } from "@/components/macros/snipe-controls";
 import { useToast } from "@/components/providers/toast-provider";
-import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { SectionCard } from "@/components/ui/card";
 import { TextInput } from "@/components/ui/input";
@@ -27,34 +27,13 @@ type TabDef = {
   key: TabKey;
   title: string;
   subtitle: string;
-  accent: string;
 };
 
 const TABS: TabDef[] = [
-  {
-    key: "badname",
-    title: "BADNAME",
-    subtitle: "욕설/금칙 닉네임 자동 전환",
-    accent: "#1ed760",
-  },
-  {
-    key: "rename",
-    title: "RENAME",
-    subtitle: "선택한 부캐 닉네임 변경",
-    accent: "#539df5",
-  },
-  {
-    key: "character",
-    title: "CHARACTER",
-    subtitle: "새 캐릭터 생성",
-    accent: "#ffa42b",
-  },
-  {
-    key: "snipe",
-    title: "SNIPE",
-    subtitle: "타겟 닉네임 스나이프",
-    accent: "#f3727f",
-  },
+  { key: "badname", title: "미통디", subtitle: "욕설/금칙 닉네임 자동 전환" },
+  { key: "rename", title: "닉변", subtitle: "선택한 부캐 닉네임 변경" },
+  { key: "character", title: "캐릭터", subtitle: "새 캐릭터 생성" },
+  { key: "snipe", title: "스나이프", subtitle: "타겟 닉네임 확보 시도" },
 ];
 
 const POLL_INTERVAL_MS = 3500;
@@ -110,36 +89,21 @@ export default function MacrosPage() {
 
   const handleSubmitted = (job: JobResponse) => {
     setJobs((prev) => [job, ...prev.filter((p) => p.id !== job.id)]);
-    toast.show(`매크로 제출 완료 (${job.id.slice(0, 8)})`, "success");
+    toast.show(`등록됨 (${job.id.slice(0, 8)})`, "success");
   };
 
   return (
-    <div className="flex flex-col gap-8">
-      <header className="flex flex-col gap-3">
-        <p className="text-[12px] font-bold uppercase tracking-[1.8px] text-[#1ed760]">
-          MACRO CONSOLE
-        </p>
-        <div className="flex flex-col gap-3 lg:flex-row lg:items-end lg:justify-between">
-          <div className="flex flex-col gap-2">
-            <h1 className="text-[32px] font-bold tracking-tight text-white sm:text-[40px]">
-              매크로 실행
-            </h1>
-            <p className="max-w-xl text-[15px] leading-relaxed text-[#b3b3b3]">
-              저장된 계정을 선택하거나 직접 입력해 네 가지 매크로를 실행할 수
-              있습니다. 모든 작업은 백엔드 큐에 등록된 뒤 비동기로 처리됩니다.
-            </p>
-          </div>
-          <div className="flex gap-2">
-            <Button
-              variant="outline"
-              uppercase
-              onClick={() => setDrawerOpen(true)}
-            >
-              저장된 계정 ({accounts.length})
-            </Button>
-          </div>
-        </div>
-      </header>
+    <div className="flex flex-col gap-6">
+      <div className="flex items-center justify-between gap-3">
+        <h1 className="text-[20px] font-semibold text-white">매크로</h1>
+        <Button
+          variant="outline"
+          size="sm"
+          onClick={() => setDrawerOpen(true)}
+        >
+          저장된 계정 ({accounts.length})
+        </Button>
+      </div>
 
       <TabBar active={activeTab} onChange={setActiveTab} />
 
@@ -176,7 +140,7 @@ function TabBar({
   onChange: (key: TabKey) => void;
 }) {
   return (
-    <div className="flex flex-wrap gap-2">
+    <div className="flex flex-wrap gap-1 border-b border-[#272727]">
       {TABS.map((tab) => {
         const on = tab.key === active;
         return (
@@ -184,21 +148,13 @@ function TabBar({
             key={tab.key}
             type="button"
             onClick={() => onChange(tab.key)}
-            className={`group flex min-w-[160px] flex-col items-start gap-1 rounded-2xl px-5 py-4 text-left transition-colors ${
+            className={`border-b-2 px-4 py-2 text-[14px] transition-colors ${
               on
-                ? "bg-[#1f1f1f]"
-                : "bg-[#181818] hover:bg-[#1f1f1f]"
+                ? "border-[#1ed760] text-white"
+                : "border-transparent text-[#b3b3b3] hover:text-white"
             }`}
-            style={{
-              borderLeft: on
-                ? `4px solid ${tab.accent}`
-                : "4px solid transparent",
-            }}
           >
-            <span className="text-[13px] font-bold uppercase tracking-[1.8px] text-white">
-              {tab.title}
-            </span>
-            <span className="text-[12px] text-[#b3b3b3]">{tab.subtitle}</span>
+            {tab.title}
           </button>
         );
       })}
@@ -212,7 +168,7 @@ function MacroForm({
   onJob,
 }: {
   tab: TabKey;
-  accounts: { id: string; user_id: string; password: string; slave_index: number; label: string; created_at: string }[];
+  accounts: { id: string; user_id: string; password: string; label: string; created_at: string }[];
   onJob: (job: JobResponse) => void;
 }) {
   const toast = useToast();
@@ -220,20 +176,27 @@ function MacroForm({
   const [selectedId, setSelectedId] = useState<string>(
     initialAccount ? initialAccount.id : CREDENTIAL_MANUAL,
   );
-  const [userId, setUserId] = useState(initialAccount?.user_id ?? "");
-  const [password, setPassword] = useState(initialAccount?.password ?? "");
+  const [userId, setUserIdState] = useState(initialAccount?.user_id ?? "");
+  const [password, setPasswordState] = useState(initialAccount?.password ?? "");
   const [nickname, setNickname] = useState("");
-  const [slaveIndex, setSlaveIndex] = useState<number>(
-    initialAccount?.slave_index ?? 0,
-  );
   const [rate, setRate] = useState<number>(5);
-  const [duration, setDuration] = useState<number>(30 * 60);
+  const [slaveIndex, setSlaveIndex] = useState<number | null>(null);
   const [submitting, setSubmitting] = useState(false);
-  const [submittedJob, setSubmittedJob] = useState<JobResponse | null>(null);
 
-  const showSlaveIndex = tab === "rename" || tab === "snipe";
+  // Credentials can change via manual edit or saved-account selection.
+  // Clear the probed slave whenever either changes so we never submit a
+  // slave_index from a previous account.
+  const setUserId = (value: string) => {
+    setUserIdState(value);
+    setSlaveIndex(null);
+  };
+  const setPassword = (value: string) => {
+    setPasswordState(value);
+    setSlaveIndex(null);
+  };
 
   const formMeta = useMemo(() => TABS.find((t) => t.key === tab)!, [tab]);
+  const needsSlave = tab === "rename" || tab === "snipe";
 
   const onSubmit = async () => {
     if (!userId.trim() || !password) {
@@ -244,8 +207,11 @@ function MacroForm({
       toast.show("닉네임을 입력해 주세요.", "error");
       return;
     }
+    if (needsSlave && slaveIndex === null) {
+      toast.show("대상 캐릭터를 먼저 선택하세요.", "error");
+      return;
+    }
     setSubmitting(true);
-    setSubmittedJob(null);
     try {
       const idempotency_key = generateIdempotencyKey();
       const basePayload = {
@@ -262,17 +228,15 @@ function MacroForm({
       } else if (tab === "rename") {
         job = await api.macroRename({
           ...basePayload,
-          slave_index: slaveIndex,
+          slave_index: slaveIndex ?? 0,
         });
       } else {
         job = await api.macroSnipe({
           ...basePayload,
-          slave_index: slaveIndex,
+          slave_index: slaveIndex ?? 0,
           rate_per_second: rate,
-          max_duration_seconds: duration,
         });
       }
-      setSubmittedJob(job);
       onJob(job);
       setNickname("");
     } catch (err) {
@@ -285,19 +249,8 @@ function MacroForm({
   };
 
   return (
-    <SectionCard
-      title={
-        <span className="flex items-center gap-2">
-          <span
-            className="inline-block h-2 w-2 rounded-full"
-            style={{ background: formMeta.accent }}
-          />
-          {formMeta.title}
-        </span>
-      }
-      description={formMeta.subtitle}
-    >
-      <div className="flex flex-col gap-6">
+    <SectionCard title={formMeta.title} description={formMeta.subtitle}>
+      <div className="flex flex-col gap-5">
         <CredentialFields
           accounts={accounts}
           selectedId={selectedId}
@@ -306,66 +259,40 @@ function MacroForm({
           onUserIdChange={setUserId}
           password={password}
           onPasswordChange={setPassword}
-          slaveIndex={slaveIndex}
-          onSlaveIndexChange={setSlaveIndex}
-          showSlaveIndex={showSlaveIndex}
         />
+
+        {needsSlave ? (
+          <SlavePicker
+            key={`${userId}|${password}`}
+            userId={userId}
+            password={password}
+            selectedSlaveIndex={slaveIndex}
+            onSelectedSlaveIndexChange={setSlaveIndex}
+          />
+        ) : null}
 
         <TextInput
           label="닉네임"
-          placeholder="타겟 닉네임을 입력하세요"
+          placeholder="타겟 닉네임"
           value={nickname}
           onChange={(e) => setNickname(e.target.value)}
         />
 
         {tab === "snipe" ? (
-          <SnipeControls
-            rate={rate}
-            onRateChange={setRate}
-            duration={duration}
-            onDurationChange={setDuration}
-          />
+          <SnipeControls rate={rate} onRateChange={setRate} />
         ) : null}
 
-        <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-          <p className="text-[12px] text-[#b3b3b3]">
-            모든 요청은 idempotency key 와 함께 전송됩니다. 동일한 요청은 중복
-            실행되지 않습니다.
-          </p>
-          <div className="flex gap-3">
-            <Button
-              variant="outline"
-              onClick={() => {
-                setNickname("");
-                setSubmittedJob(null);
-              }}
-            >
-              초기화
-            </Button>
-            <Button
-              uppercase
-              size="lg"
-              loading={submitting}
-              onClick={onSubmit}
-            >
-              {formMeta.title} 실행
-            </Button>
-          </div>
+        <div className="flex items-center justify-end gap-2">
+          <Button
+            variant="outline"
+            onClick={() => setNickname("")}
+          >
+            초기화
+          </Button>
+          <Button loading={submitting} onClick={onSubmit}>
+            실행
+          </Button>
         </div>
-
-        {submittedJob ? (
-          <div className="flex flex-wrap items-center justify-between gap-3 rounded-lg border border-[#1ed760]/30 bg-[#1ed760]/10 px-4 py-3">
-            <div className="flex items-center gap-3">
-              <Badge tone="success">QUEUED</Badge>
-              <p className="text-[13px] font-semibold text-white">
-                작업 {submittedJob.id.slice(0, 8)} 이(가) 큐에 등록되었습니다.
-              </p>
-            </div>
-            <p className="text-[12px] text-[#b3b3b3]">
-              아래 목록에서 진행 상태를 확인할 수 있습니다.
-            </p>
-          </div>
-        ) : null}
       </div>
     </SectionCard>
   );

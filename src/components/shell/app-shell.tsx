@@ -11,111 +11,18 @@ import { useAuth } from "@/components/providers/auth-provider";
 type NavItem = {
   href: string;
   label: string;
-  icon: React.ReactNode;
   adminOnly?: boolean;
 };
 
 const NAV: NavItem[] = [
-  {
-    href: "/",
-    label: "유저 검색",
-    icon: (
-      <svg
-        width="18"
-        height="18"
-        viewBox="0 0 24 24"
-        fill="none"
-        stroke="currentColor"
-        strokeWidth="2"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-      >
-        <circle cx="12" cy="8" r="4" />
-        <path d="M4 21a8 8 0 0 1 16 0" />
-      </svg>
-    ),
-  },
-  {
-    href: "/clans",
-    label: "클랜",
-    icon: (
-      <svg
-        width="18"
-        height="18"
-        viewBox="0 0 24 24"
-        fill="none"
-        stroke="currentColor"
-        strokeWidth="2"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-      >
-        <path d="M4 4h6l2 3h8v13H4z" />
-      </svg>
-    ),
-  },
-  {
-    href: "/macros",
-    label: "매크로",
-    icon: (
-      <svg
-        width="18"
-        height="18"
-        viewBox="0 0 24 24"
-        fill="none"
-        stroke="currentColor"
-        strokeWidth="2"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-      >
-        <path d="M5 12h14" />
-        <path d="M12 5v14" />
-        <circle cx="12" cy="12" r="10" />
-      </svg>
-    ),
-  },
-  {
-    href: "/servers",
-    label: "서버 상태",
-    icon: (
-      <svg
-        width="18"
-        height="18"
-        viewBox="0 0 24 24"
-        fill="none"
-        stroke="currentColor"
-        strokeWidth="2"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-      >
-        <rect x="3" y="4" width="18" height="7" rx="2" />
-        <rect x="3" y="13" width="18" height="7" rx="2" />
-        <circle cx="7" cy="7.5" r="0.8" fill="currentColor" />
-        <circle cx="7" cy="16.5" r="0.8" fill="currentColor" />
-      </svg>
-    ),
-  },
+  { href: "/", label: "유저 검색" },
+  { href: "/clans", label: "클랜" },
+  { href: "/macros", label: "매크로" },
+  { href: "/servers", label: "서버 상태" },
 ];
 
 const ADMIN_NAV: NavItem[] = [
-  {
-    href: "/admin/users",
-    label: "관리자",
-    adminOnly: true,
-    icon: (
-      <svg
-        width="18"
-        height="18"
-        viewBox="0 0 24 24"
-        fill="none"
-        stroke="currentColor"
-        strokeWidth="2"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-      >
-        <path d="M12 2 3 6v6c0 5 4 9 9 10 5-1 9-5 9-10V6l-9-4Z" />
-      </svg>
-    ),
-  },
+  { href: "/admin/users", label: "관리자", adminOnly: true },
 ];
 
 export function AppShell({ children }: { children: React.ReactNode }) {
@@ -135,11 +42,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
     return user.role === "admin" ? [...NAV, ...ADMIN_NAV] : NAV;
   }, [user]);
 
-  if (status === "loading") {
-    return <FullPageSpinner />;
-  }
-
-  if (status === "unauthenticated" || !user) {
+  if (status === "loading" || status === "unauthenticated" || !user) {
     return <FullPageSpinner />;
   }
 
@@ -169,7 +72,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
         onLogout={logout}
       />
       <main className="flex-1">
-        <div className="mx-auto w-full max-w-6xl px-5 py-8 sm:px-8 lg:px-10 lg:py-12">
+        <div className="mx-auto w-full max-w-5xl px-5 py-7 sm:px-6 lg:px-8">
           {children}
         </div>
       </main>
@@ -192,8 +95,8 @@ function TopNav({
 }) {
   return (
     <header className="sticky top-0 z-40 border-b border-[#272727] bg-[#121212]/95 backdrop-blur">
-      <div className="mx-auto flex h-16 w-full max-w-7xl items-center gap-6 px-5 sm:px-8">
-        <BrandMark />
+      <div className="mx-auto flex h-14 w-full max-w-6xl items-center gap-6 px-5 sm:px-6">
+        <BrandMark size="sm" />
         <nav className="hidden flex-1 items-center gap-1 lg:flex">
           {items.map((item) => {
             const active = isActive(pathname, item.href);
@@ -202,40 +105,28 @@ function TopNav({
                 key={item.href}
                 href={item.href}
                 aria-current={active ? "page" : undefined}
-                className={`group inline-flex items-center gap-2 rounded-full px-4 py-2 text-[14px] font-bold transition-colors ${
+                className={`inline-flex items-center rounded px-3 py-1.5 text-[13px] transition-colors ${
                   active
-                    ? "bg-[#1f1f1f] text-white"
+                    ? "text-white"
                     : "text-[#b3b3b3] hover:text-white"
                 }`}
               >
-                <span
-                  className={
-                    active ? "text-[#1ed760]" : "text-[#7c7c7c] group-hover:text-white"
-                  }
-                >
-                  {item.icon}
-                </span>
                 {item.label}
               </Link>
             );
           })}
         </nav>
 
-        <div className="ml-auto hidden items-center gap-3 lg:flex">
+        <div className="ml-auto hidden items-center gap-2 lg:flex">
           <UserPill user={user} />
-          <Button
-            variant="ghost"
-            size="sm"
-            uppercase
-            onClick={onLogout}
-          >
+          <Button variant="ghost" size="sm" onClick={onLogout}>
             로그아웃
           </Button>
         </div>
 
         <button
           type="button"
-          className="ml-auto inline-flex h-10 w-10 items-center justify-center rounded-full bg-[#1f1f1f] text-white transition-colors hover:bg-[#2a2a2a] lg:hidden"
+          className="ml-auto inline-flex h-9 w-9 items-center justify-center rounded bg-[#1f1f1f] text-white lg:hidden"
           onClick={onOpenDrawer}
           aria-label="메뉴 열기"
         >
@@ -245,7 +136,7 @@ function TopNav({
             viewBox="0 0 24 24"
             fill="none"
             stroke="currentColor"
-            strokeWidth="2.5"
+            strokeWidth="2"
             strokeLinecap="round"
             strokeLinejoin="round"
           >
@@ -267,26 +158,20 @@ function UserPill({
   return (
     <Link
       href="/me"
-      className="inline-flex items-center gap-2 rounded-full bg-[#1f1f1f] py-1.5 pl-1.5 pr-4 text-[13px] font-bold text-white transition-colors hover:bg-[#2a2a2a]"
+      className="inline-flex items-center gap-2 rounded px-2 py-1 text-[13px] text-[#b3b3b3] transition-colors hover:text-white"
     >
-      <span className="inline-flex h-7 w-7 items-center justify-center overflow-hidden rounded-full bg-[#121212] text-[12px] font-bold text-[#1ed760]">
-        {user.picture_url ? (
-          // eslint-disable-next-line @next/next/no-img-element
-          <img
-            src={user.picture_url}
-            alt=""
-            className="h-full w-full object-cover"
-            referrerPolicy="no-referrer"
-          />
-        ) : (
-          (user.name || "?").slice(0, 1).toUpperCase()
-        )}
-      </span>
-      <span className="max-w-[120px] truncate">{user.name}</span>
+      {user.picture_url ? (
+        // eslint-disable-next-line @next/next/no-img-element
+        <img
+          src={user.picture_url}
+          alt=""
+          className="h-6 w-6 rounded-full object-cover"
+          referrerPolicy="no-referrer"
+        />
+      ) : null}
+      <span className="max-w-[140px] truncate">{user.name}</span>
       {user.role === "admin" ? (
-        <span className="rounded-full bg-[#1ed760] px-2 py-[2px] text-[10px] font-bold uppercase tracking-[1px] text-black">
-          관리자
-        </span>
+        <span className="text-[11px] text-[#1ed760]">관리자</span>
       ) : null}
     </Link>
   );
@@ -317,17 +202,17 @@ function MobileDrawer({
         }`}
       />
       <aside
-        className={`fixed inset-y-0 right-0 z-50 flex w-[300px] flex-col border-l border-[#272727] bg-[#181818] transition-transform duration-200 lg:hidden ${
+        className={`fixed inset-y-0 right-0 z-50 flex w-[280px] flex-col border-l border-[#272727] bg-[#181818] transition-transform duration-200 lg:hidden ${
           open ? "translate-x-0" : "translate-x-full"
         }`}
       >
-        <div className="flex h-16 items-center justify-between border-b border-[#272727] px-6">
+        <div className="flex h-14 items-center justify-between border-b border-[#272727] px-5">
           <BrandMark size="sm" asLink={false} />
           <button
             type="button"
             onClick={onClose}
             aria-label="메뉴 닫기"
-            className="inline-flex h-9 w-9 items-center justify-center rounded-full bg-[#1f1f1f] text-white"
+            className="inline-flex h-8 w-8 items-center justify-center rounded text-[#b3b3b3] hover:text-white"
           >
             ×
           </button>
@@ -341,34 +226,29 @@ function MobileDrawer({
                 href={item.href}
                 onClick={onClose}
                 aria-current={active ? "page" : undefined}
-                className={`flex items-center gap-3 rounded-full px-5 py-3 text-[14px] font-bold ${
+                className={`rounded px-4 py-2.5 text-[14px] ${
                   active
                     ? "bg-[#1f1f1f] text-white"
-                    : "text-[#b3b3b3] hover:text-white"
+                    : "text-[#b3b3b3]"
                 }`}
               >
-                <span
-                  className={
-                    active ? "text-[#1ed760]" : "text-[#7c7c7c]"
-                  }
-                >
-                  {item.icon}
-                </span>
                 {item.label}
               </Link>
             );
           })}
         </nav>
-        <div className="border-t border-[#272727] p-5">
-          <p className="text-[12px] uppercase tracking-[1.4px] text-[#7c7c7c]">
-            접속 중
-          </p>
-          <p className="mt-1 text-[14px] font-bold text-white">{userName}</p>
-          <div className="mt-4 flex gap-2">
-            <Button variant="secondary" size="sm" fullWidth onClick={onLogout}>
-              로그아웃
-            </Button>
-          </div>
+        <div className="border-t border-[#272727] p-4">
+          <p className="text-[12px] text-[#7c7c7c]">접속 중</p>
+          <p className="mt-0.5 text-[14px] text-white">{userName}</p>
+          <Button
+            variant="secondary"
+            size="sm"
+            fullWidth
+            className="mt-3"
+            onClick={onLogout}
+          >
+            로그아웃
+          </Button>
         </div>
       </aside>
     </>
@@ -381,7 +261,7 @@ function FullPageSpinner() {
       <div
         aria-hidden
         style={{ animation: "zh-spin 0.8s linear infinite" }}
-        className="h-9 w-9 rounded-full border-[3px] border-[#272727] border-t-[#1ed760]"
+        className="h-8 w-8 rounded-full border-[3px] border-[#272727] border-t-[#1ed760]"
       />
     </div>
   );
@@ -397,10 +277,9 @@ function PendingGate({
   return (
     <GateShell
       title="관리자 승인 대기중"
-      description="접근 권한 승인 후 모든 기능을 이용할 수 있습니다."
+      description="승인 후에 기능을 이용할 수 있습니다."
       userName={userName}
       onLogout={onLogout}
-      tone="warning"
     />
   );
 }
@@ -415,10 +294,9 @@ function BannedGate({
   return (
     <GateShell
       title="접근이 차단된 계정입니다"
-      description="문의 사항이 있다면 관리자에게 연락해주세요."
+      description="문의 사항이 있다면 관리자에게 연락하세요."
       userName={userName}
       onLogout={onLogout}
-      tone="danger"
     />
   );
 }
@@ -428,35 +306,19 @@ function GateShell({
   description,
   userName,
   onLogout,
-  tone,
 }: {
   title: string;
   description: string;
   userName: string;
   onLogout: () => void;
-  tone: "warning" | "danger";
 }) {
-  const accent =
-    tone === "warning" ? "text-[#ffa42b]" : "text-[#f3727f]";
   return (
-    <div className="flex min-h-screen flex-col items-center justify-center gap-8 bg-[#121212] px-5 text-center">
-      <div
-        className="flex w-full max-w-md flex-col items-center gap-5 rounded-2xl bg-[#181818] p-10"
-        style={{ boxShadow: "var(--shadow-heavy)" }}
-      >
-        <span className={`text-[12px] font-bold uppercase tracking-[2px] ${accent}`}>
-          {tone === "warning" ? "PENDING" : "BANNED"}
-        </span>
-        <h1 className="text-[24px] font-bold tracking-tight text-white">
-          {title}
-        </h1>
-        <p className="text-[14px] leading-relaxed text-[#b3b3b3]">
-          {description}
-        </p>
-        <div className="rounded-full bg-[#1f1f1f] px-4 py-2 text-[13px] font-semibold text-white">
-          {userName}
-        </div>
-        <Button variant="outline" size="md" uppercase onClick={onLogout}>
+    <div className="flex min-h-screen flex-col items-center justify-center gap-6 bg-[#121212] px-5 text-center">
+      <div className="flex w-full max-w-sm flex-col items-center gap-4 rounded-md border border-[#272727] bg-[#181818] p-6">
+        <h1 className="text-[17px] font-semibold text-white">{title}</h1>
+        <p className="text-[13px] text-[#b3b3b3]">{description}</p>
+        <p className="text-[13px] text-[#b3b3b3]">{userName}</p>
+        <Button variant="outline" size="sm" onClick={onLogout}>
           로그아웃
         </Button>
       </div>

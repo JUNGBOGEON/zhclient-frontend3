@@ -3,7 +3,6 @@
 import { useCallback, useEffect, useState } from "react";
 
 import { useAuth } from "@/components/providers/auth-provider";
-import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { SectionCard } from "@/components/ui/card";
 import { ApiError, api } from "@/lib/api";
@@ -52,104 +51,61 @@ export default function MePage() {
 
   if (!user) return null;
 
-  return (
-    <div className="flex flex-col gap-8">
-      <header className="flex flex-col gap-3">
-        <p className="text-[12px] font-bold uppercase tracking-[1.8px] text-[#1ed760]">
-          MY ACCOUNT
-        </p>
-        <h1 className="text-[32px] font-bold tracking-tight text-white sm:text-[40px]">
-          내 프로필
-        </h1>
-      </header>
+  const statusLabel =
+    user.status === "approved"
+      ? "승인됨"
+      : user.status === "pending"
+        ? "대기"
+        : "차단";
 
-      <section
-        className="overflow-hidden rounded-2xl p-8"
-        style={{
-          background:
-            "linear-gradient(135deg, #0d4128 0%, #181818 55%, #181818 100%)",
-          boxShadow: "var(--shadow-medium)",
-        }}
-      >
-        <div className="flex flex-col gap-6 sm:flex-row sm:items-center">
-          <div className="flex h-24 w-24 shrink-0 items-center justify-center overflow-hidden rounded-full bg-[#121212] text-[32px] font-bold text-[#1ed760]">
-            {user.picture_url ? (
-              // eslint-disable-next-line @next/next/no-img-element
-              <img
-                src={user.picture_url}
-                alt=""
-                className="h-full w-full object-cover"
-                referrerPolicy="no-referrer"
-              />
-            ) : (
-              user.name.slice(0, 1).toUpperCase()
-            )}
-          </div>
-          <div className="flex flex-col gap-2">
-            <div className="flex flex-wrap items-center gap-2">
-              <Badge tone="success">
-                {user.status === "approved"
-                  ? "APPROVED"
-                  : user.status === "pending"
-                    ? "PENDING"
-                    : "BANNED"}
-              </Badge>
-              {user.role === "admin" ? (
-                <Badge tone="info">ADMIN</Badge>
-              ) : null}
-            </div>
-            <h2 className="text-[28px] font-bold tracking-tight text-white">
-              {user.name}
-            </h2>
-            <p className="text-[13px] text-[#cbcbcb]">{user.email}</p>
-          </div>
-          <div className="ml-auto">
-            <Button variant="outline" uppercase onClick={logout}>
-              로그아웃
-            </Button>
-          </div>
+  return (
+    <div className="flex flex-col gap-6">
+      <h1 className="text-[20px] font-semibold text-white">내 프로필</h1>
+
+      <section className="flex items-center gap-4 rounded-md border border-[#272727] bg-[#181818] p-5">
+        {user.picture_url ? (
+          // eslint-disable-next-line @next/next/no-img-element
+          <img
+            src={user.picture_url}
+            alt=""
+            className="h-14 w-14 rounded-full object-cover"
+            referrerPolicy="no-referrer"
+          />
+        ) : null}
+        <div className="flex-1">
+          <h2 className="text-[18px] font-semibold text-white">{user.name}</h2>
+          <p className="text-[13px] text-[#b3b3b3]">{user.email}</p>
+          <p className="mt-1 text-[12px] text-[#7c7c7c]">
+            {statusLabel}
+            {user.role === "admin" ? " · 관리자" : ""}
+          </p>
         </div>
+        <Button variant="outline" size="sm" onClick={logout}>
+          로그아웃
+        </Button>
       </section>
 
-      <div className="grid gap-5 lg:grid-cols-2">
+      <div className="grid gap-4 lg:grid-cols-2">
         <SectionCard title="계정 정보">
           <dl className="flex flex-col divide-y divide-[#272727]">
-            <Row label="User ID" value={formatNumber(user.id)} mono />
-            <Row label="Role" value={user.role === "admin" ? "관리자" : "일반"} />
-            <Row
-              label="상태"
-              value={
-                user.status === "approved"
-                  ? "승인됨"
-                  : user.status === "pending"
-                    ? "승인 대기"
-                    : "차단됨"
-              }
-            />
+            <Row label="사용자 ID" value={formatNumber(user.id)} mono />
+            <Row label="권한" value={user.role === "admin" ? "관리자" : "일반"} />
+            <Row label="상태" value={statusLabel} />
             {user.approved_at ? (
-              <Row
-                label="승인 일시"
-                value={formatDateTime(user.approved_at)}
-                mono
-              />
+              <Row label="승인 일시" value={formatDateTime(user.approved_at)} mono />
             ) : null}
             {user.created_at ? (
-              <Row
-                label="가입 일시"
-                value={formatDateTime(user.created_at)}
-                mono
-              />
+              <Row label="가입 일시" value={formatDateTime(user.created_at)} mono />
             ) : null}
           </dl>
         </SectionCard>
 
         <SectionCard
-          title="내 캐릭터 자원"
+          title="캐릭터 자원"
           action={
             <Button
               variant="secondary"
               size="sm"
-              uppercase
               loading={walletLoading}
               onClick={loadWallet}
             >
@@ -158,24 +114,16 @@ export default function MePage() {
           }
         >
           {walletError ? (
-            <p className="text-[13px] text-[#b3b3b3]">{walletError}</p>
+            <p className="text-[13px] text-[#7c7c7c]">{walletError}</p>
           ) : wallet ? (
             <dl className="flex flex-col divide-y divide-[#272727]">
               <Row label="캐릭터" value={wallet.slave_name} />
-              <Row label="레벨" value={`Lv. ${formatNumber(wallet.slave_level)}`} />
-              <Row
-                label="미네랄"
-                value={formatNumber(wallet.mineral)}
-                tone="success"
-              />
-              <Row
-                label="가스"
-                value={formatNumber(wallet.gas)}
-                tone="info"
-              />
+              <Row label="레벨" value={`Lv.${formatNumber(wallet.slave_level)}`} />
+              <Row label="미네랄" value={formatNumber(wallet.mineral)} tone="success" />
+              <Row label="가스" value={formatNumber(wallet.gas)} tone="info" />
             </dl>
           ) : (
-            <p className="text-[13px] text-[#b3b3b3]">
+            <p className="text-[13px] text-[#7c7c7c]">
               연동 후 미네랄/가스 자원이 표시됩니다.
             </p>
           )}
@@ -203,13 +151,9 @@ function Row({
         ? "text-[#539df5]"
         : "text-white";
   return (
-    <div className="flex items-center justify-between py-3 first:pt-0 last:pb-0">
-      <dt className="text-[12px] font-semibold uppercase tracking-[1.4px] text-[#7c7c7c]">
-        {label}
-      </dt>
-      <dd
-        className={`text-[14px] font-semibold ${color} ${mono ? "font-mono" : ""}`}
-      >
+    <div className="flex items-center justify-between py-2.5 first:pt-0 last:pb-0">
+      <dt className="text-[13px] text-[#b3b3b3]">{label}</dt>
+      <dd className={`text-[13px] ${color} ${mono ? "font-mono" : ""}`}>
         {value}
       </dd>
     </div>

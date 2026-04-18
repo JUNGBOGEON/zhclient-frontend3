@@ -12,9 +12,6 @@ type CredentialFieldsProps = {
   password: string;
   onUserIdChange: (value: string) => void;
   onPasswordChange: (value: string) => void;
-  slaveIndex?: number;
-  onSlaveIndexChange?: (value: number) => void;
-  showSlaveIndex?: boolean;
 };
 
 const MANUAL = "__manual__";
@@ -27,9 +24,6 @@ export function CredentialFields({
   password,
   onUserIdChange,
   onPasswordChange,
-  slaveIndex,
-  onSlaveIndexChange,
-  showSlaveIndex = false,
 }: CredentialFieldsProps) {
   const accountOptions = [
     { value: MANUAL, label: "직접 입력" },
@@ -50,7 +44,6 @@ export function CredentialFields({
     if (!acct) return;
     onUserIdChange(acct.user_id);
     onPasswordChange(acct.password);
-    if (onSlaveIndexChange) onSlaveIndexChange(acct.slave_index);
   };
 
   const manual = selectedId === MANUAL || !selectedId;
@@ -80,17 +73,6 @@ export function CredentialFields({
           disabled={!manual}
         />
       </div>
-      {showSlaveIndex && onSlaveIndexChange ? (
-        <Select
-          label="부캐 슬롯"
-          value={slaveIndex ?? 0}
-          onChange={(v) => onSlaveIndexChange(Number(v))}
-          options={[0, 1, 2, 3].map((n) => ({
-            value: n,
-            label: `슬롯 ${n}`,
-          }))}
-        />
-      ) : null}
     </div>
   );
 }
