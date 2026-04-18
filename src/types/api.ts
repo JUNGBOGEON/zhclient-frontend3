@@ -55,11 +55,16 @@ export interface ClanDetail {
   members: ClanMember[];
 }
 
+export interface ClanRef {
+  clan_id: number | null;
+  name: string | null;
+}
+
 export interface PlayerProfile {
   account_id: number;
   name: string;
   level: number;
-  clan?: string | null;
+  clan: ClanRef;
   last_login_ms?: number | null;
   status_message?: string | null;
   chat_profile?: string | null;

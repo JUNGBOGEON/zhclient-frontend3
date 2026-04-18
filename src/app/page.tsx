@@ -96,6 +96,7 @@ function ResultView({ state }: { state: ResultState }) {
 function PlayerCard({ player }: { player: PlayerProfile }) {
   const last = formatLastLogin(player.last_login_ms ?? null);
   const online = last.tone === "online";
+  const clanName = player.clan?.name ?? null;
   return (
     <div className="flex flex-col gap-5">
       <section className="rounded-md border border-[#272727] bg-[#181818] p-5">
@@ -108,7 +109,7 @@ function PlayerCard({ player }: { player: PlayerProfile }) {
         </div>
         <div className="mt-2 flex flex-wrap gap-x-4 gap-y-1 text-[13px] text-[#b3b3b3]">
           <span>Lv.{player.level}</span>
-          {player.clan ? <span>{player.clan}</span> : null}
+          {clanName ? <span>{clanName}</span> : null}
           <span className="text-[#7c7c7c]">
             #{formatNumber(player.account_id)}
           </span>
@@ -126,8 +127,8 @@ function PlayerCard({ player }: { player: PlayerProfile }) {
             <Row label="레벨" value={`Lv.${formatNumber(player.level)}`} />
             <Row
               label="클랜"
-              value={player.clan ?? "없음"}
-              mute={!player.clan}
+              value={clanName ?? "없음"}
+              mute={!clanName}
             />
           </dl>
         </SectionCard>
