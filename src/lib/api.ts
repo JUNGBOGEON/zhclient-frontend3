@@ -7,6 +7,7 @@ import type {
   CharacterRequest,
   ClanDetail,
   ClanSearchResponse,
+  CreateAccountPayload,
   EligibilityRequest,
   EligibilityResponse,
   HistoryResponse,
@@ -18,6 +19,8 @@ import type {
   RenameRequest,
   ServerStatus,
   SnipeRequest,
+  StoredAccount,
+  UpdateAccountPayload,
   User,
   UserStatus,
 } from "@/types/api";
@@ -231,6 +234,27 @@ export const api = {
     const q = status ? `?status=${encodeURIComponent(status)}` : "";
     return request<JobResponse[]>(`/admin/macros${q}`);
   },
+
+  listMyAccounts: () => request<StoredAccount[]>("/me/accounts"),
+  createMyAccount: (body: CreateAccountPayload) =>
+    request<StoredAccount>("/me/accounts", {
+      method: "POST",
+      body: JSON.stringify(body),
+    }),
+  updateMyAccount: (id: string, body: UpdateAccountPayload) =>
+    request<StoredAccount>(`/me/accounts/${encodeURIComponent(id)}`, {
+      method: "PATCH",
+      body: JSON.stringify(body),
+    }),
+  deleteMyAccount: (id: string) =>
+    request<void>(`/me/accounts/${encodeURIComponent(id)}`, {
+      method: "DELETE",
+    }),
+  runMyAccountCheck: (id: string) =>
+    request<AccountCheckResponse>(
+      `/me/accounts/${encodeURIComponent(id)}/check`,
+      { method: "POST" },
+    ),
 };
 
 export const API_BASE_URL = BASE_URL;

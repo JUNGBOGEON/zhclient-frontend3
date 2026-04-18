@@ -163,35 +163,30 @@ export interface HistoryResponse {
   offset: number;
 }
 
-export interface BadnameRequest {
-  user_id: string;
-  password: string;
-  nickname: string;
+interface _AccountJobBase {
+  account_id?: string;
+  user_id?: string;
+  password?: string;
   idempotency_key?: string;
 }
 
-export interface RenameRequest {
-  user_id: string;
-  password: string;
+export interface BadnameRequest extends _AccountJobBase {
+  nickname: string;
+}
+
+export interface RenameRequest extends _AccountJobBase {
   nickname: string;
   slave_index?: number;
-  idempotency_key?: string;
 }
 
-export interface CharacterRequest {
-  user_id: string;
-  password: string;
+export interface CharacterRequest extends _AccountJobBase {
   nickname: string;
-  idempotency_key?: string;
 }
 
-export interface SnipeRequest {
-  user_id: string;
-  password: string;
+export interface SnipeRequest extends _AccountJobBase {
   nickname: string;
   slave_index?: number;
   rate_per_second?: number;
-  idempotency_key?: string;
 }
 
 export interface CharacterEntry {
@@ -226,11 +221,25 @@ export interface EligibilityRequest {
 export interface StoredAccount {
   id: string;
   label: string;
-  user_id: string;
+  game_user_id: string;
+  kind: AccountKind;
+  selected_slave_index?: number | null;
+  last_checked_at?: string | null;
+  last_check?: AccountCheckResponse | null;
+  created_at: string;
+  updated_at?: string;
+}
+
+export interface CreateAccountPayload {
+  label: string;
+  game_user_id: string;
   password: string;
   kind: AccountKind;
-  created_at: string;
-  last_checked_at?: string;
-  last_check?: AccountCheckResponse;
-  selected_slave_index?: number;
+}
+
+export interface UpdateAccountPayload {
+  label?: string;
+  password?: string;
+  kind?: AccountKind;
+  selected_slave_index?: number | null;
 }
