@@ -168,8 +168,18 @@ export const api = {
       method: "POST",
       body: JSON.stringify(body),
     }),
-  macroSnipe: (body: SnipeRequest) =>
-    request<JobResponse>("/macros/snipe", {
+  macroSnipeRename: (body: SnipeRequest) =>
+    request<JobResponse>("/macros/snipe-rename", {
+      method: "POST",
+      body: JSON.stringify(body),
+    }),
+  macroSnipeCharacter: (body: Omit<SnipeRequest, "slave_index">) =>
+    request<JobResponse>("/macros/snipe-character", {
+      method: "POST",
+      body: JSON.stringify(body),
+    }),
+  macroSnipeBadname: (body: Omit<SnipeRequest, "slave_index">) =>
+    request<JobResponse>("/macros/snipe-badname", {
       method: "POST",
       body: JSON.stringify(body),
     }),

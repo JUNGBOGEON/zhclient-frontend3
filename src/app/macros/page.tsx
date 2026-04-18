@@ -31,9 +31,23 @@ type TabDef = {
 
 const TABS: TabDef[] = [
   { key: "badname", title: "미통디", subtitle: "욕설/금칙 닉네임 자동 전환" },
+  {
+    key: "snipe_badname",
+    title: "미통디 전용 스나이프",
+    subtitle: "타겟 닉네임 열리면 미통디 전환",
+  },
   { key: "rename", title: "닉변", subtitle: "선택한 부캐 닉네임 변경" },
+  {
+    key: "snipe_rename",
+    title: "닉변 전용 스나이프",
+    subtitle: "타겟 닉네임 열리면 부캐 닉변",
+  },
   { key: "character", title: "캐릭터", subtitle: "새 캐릭터 생성" },
-  { key: "snipe", title: "스나이프", subtitle: "타겟 닉네임 확보 시도" },
+  {
+    key: "snipe_character",
+    title: "캐릭터 전용 스나이프",
+    subtitle: "타겟 닉네임 열리면 캐릭터 생성",
+  },
 ];
 
 const POLL_INTERVAL_MS = 3500;
@@ -196,7 +210,11 @@ function MacroForm({
   };
 
   const formMeta = useMemo(() => TABS.find((t) => t.key === tab)!, [tab]);
-  const needsSlave = tab === "rename" || tab === "snipe";
+  const needsSlave = tab === "rename" || tab === "snipe_rename";
+  const isSnipe =
+    tab === "snipe_rename" ||
+    tab === "snipe_character" ||
+    tab === "snipe_badname";
 
   const onSubmit = async () => {
     if (!userId.trim() || !password) {
@@ -230,10 +248,21 @@ function MacroForm({
           ...basePayload,
           slave_index: slaveIndex ?? 0,
         });
-      } else {
-        job = await api.macroSnipe({
+      } else if (tab === "snipe_rename") {
+        job = await api.macroSnipeRename({
           ...basePayload,
           slave_index: slaveIndex ?? 0,
+          rate_per_second: rate,
+        });
+      } else if (tab === "snipe_character") {
+        job = await api.macroSnipeCharacter({
+          ...basePayload,
+          rate_per_second: rate,
+        });
+      } else {
+        // snipe_badname
+        job = await api.macroSnipeBadname({
+          ...basePayload,
           rate_per_second: rate,
         });
       }
@@ -278,7 +307,7 @@ function MacroForm({
           onChange={(e) => setNickname(e.target.value)}
         />
 
-        {tab === "snipe" ? (
+        {isSnipe ? (
           <SnipeControls rate={rate} onRateChange={setRate} />
         ) : null}
 

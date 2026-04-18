@@ -122,7 +122,14 @@ export interface EligibilityResponse {
   extra?: Record<string, unknown> | null;
 }
 
-export type MacroOpType = "badname" | "rename" | "character" | "snipe";
+export type MacroOpType =
+  | "badname"
+  | "rename"
+  | "character"
+  | "snipe"
+  | "snipe_rename"
+  | "snipe_character"
+  | "snipe_badname";
 export type MacroStatus =
   | "queued"
   | "running"

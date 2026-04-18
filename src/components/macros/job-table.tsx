@@ -26,6 +26,9 @@ const OP_LABEL: Record<MacroOpType, string> = {
   rename: "닉변",
   character: "캐릭터",
   snipe: "스나이프",
+  snipe_rename: "닉변 스나이프",
+  snipe_character: "캐릭터 스나이프",
+  snipe_badname: "미통디 스나이프",
 };
 
 export function JobTable({
