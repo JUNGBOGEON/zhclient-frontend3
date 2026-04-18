@@ -106,27 +106,30 @@ function AccountManagerBody({
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 px-4 py-10">
-      <div className="relative max-h-[90vh] w-full max-w-xl overflow-y-auto rounded-[8px] bg-[#181818] p-6">
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 px-4 py-10 backdrop-blur-sm">
+      <div 
+        className="relative max-h-[90vh] w-full max-w-2xl overflow-y-auto rounded-[12px] bg-[#121212] p-8 shadow-[0_16px_64px_rgba(0,0,0,0.8)]"
+      >
         <button
           type="button"
           aria-label="닫기"
           onClick={() => onOpenChange(false)}
-          className="absolute right-3 top-3 inline-flex h-8 w-8 items-center justify-center rounded text-[#b3b3b3] hover:text-white"
+          className="absolute right-6 top-6 inline-flex h-10 w-10 items-center justify-center rounded-full bg-[#1f1f1f] text-[20px] font-bold text-[#b3b3b3] transition-colors hover:bg-[#2a2a2a] hover:text-white"
         >
           ×
         </button>
-        <h2 className="text-[17px] font-semibold text-white">계정 관리</h2>
-        <p className="mt-1 text-[12px] text-[#7c7c7c]">
-          계정은 서버 계정과 연결된 DB 에 저장됩니다. 비밀번호는 UI 로 다시 노출되지 않습니다.
+        <h2 className="text-[32px] font-bold tracking-tight text-white">계정 관리</h2>
+        <p className="mt-2 text-[14px] font-bold text-[#7c7c7c]">
+          로컬 DB에 암호화되어 안전하게 보관됩니다.
         </p>
+        
         {errorMessage ? (
-          <p className="mt-3 rounded border border-[#f3727f]/30 bg-[#f3727f]/10 px-3 py-2 text-[12px] text-[#f3727f]">
+          <p className="mt-6 rounded-full border border-[#f3727f]/30 bg-[#f3727f]/10 px-4 py-2 text-[13px] font-bold text-[#f3727f]">
             {errorMessage}
           </p>
         ) : null}
 
-        <div className="mt-5 flex flex-col gap-3">
+        <div className="mt-8 flex flex-col gap-5">
           <TextInput
             label="라벨"
             placeholder="예: 부캐 1 / 메인"
@@ -134,7 +137,7 @@ function AccountManagerBody({
             onChange={(e) => setLabel(e.target.value)}
           />
           <KindPicker value={kind} onChange={setKind} />
-          <div className="grid gap-4 sm:grid-cols-2">
+          <div className="grid gap-5 sm:grid-cols-2">
             <TextInput
               label="게임 아이디"
               placeholder="game_user_id"
@@ -149,21 +152,24 @@ function AccountManagerBody({
               onChange={(e) => setPassword(e.target.value)}
             />
           </div>
-          <div className="flex justify-end">
-            <Button loading={submitting} onClick={handleAdd}>
-              저장
+          <div className="mt-2 flex justify-end">
+            <Button size="lg" loading={submitting} onClick={handleAdd}>
+              계정 추가
             </Button>
           </div>
         </div>
 
-        <div className="mt-6">
-          <h3 className="text-[13px] text-[#b3b3b3]">
-            저장된 계정 ({accounts.length})
-            {loading ? <span className="ml-2 text-[#7c7c7c]">불러오는 중…</span> : null}
-          </h3>
-          <div className="mt-2 flex flex-col gap-3">
+        <div className="mt-12">
+          <div className="flex items-center gap-4">
+            <h3 className="text-[20px] font-bold text-white">
+              저장된 계정 ({accounts.length})
+            </h3>
+            {loading ? <span className="text-[13px] font-bold text-[#7c7c7c]">불러오는 중…</span> : null}
+          </div>
+          
+          <div className="mt-4 flex flex-col gap-2">
             {!loading && accounts.length === 0 ? (
-              <p className="rounded border border-dashed border-[#2a2a2a] px-4 py-6 text-center text-[13px] text-[#7c7c7c]">
+              <p className="py-10 text-center text-[15px] font-bold text-[#7c7c7c]">
                 저장된 계정이 없습니다.
               </p>
             ) : (
@@ -190,8 +196,8 @@ function KindPicker({
     { key: "non_integrated", label: "미통합 계정" },
   ];
   return (
-    <div className="flex flex-col gap-1">
-      <span className="text-[13px] text-[#b3b3b3]">계정 종류</span>
+    <div className="flex flex-col gap-2">
+      <span className="text-[14px] font-bold text-[#b3b3b3]">계정 종류</span>
       <div className="flex gap-2">
         {opts.map((o) => {
           const on = o.key === value;
@@ -200,10 +206,10 @@ function KindPicker({
               key={o.key}
               type="button"
               onClick={() => onChange(o.key)}
-              className={`flex-1 rounded-full px-3 py-2 text-[13px] transition-colors ${
+              className={`flex-1 rounded-full px-4 py-2.5 text-[14px] font-bold transition-colors ${
                 on
-                  ? "bg-[#1ed760] text-black"
-                  : "bg-[#1f1f1f] text-[#b3b3b3] hover:text-white"
+                  ? "bg-white text-black"
+                  : "bg-[#1f1f1f] text-[#b3b3b3] hover:bg-[#2a2a2a] hover:text-white"
               }`}
             >
               {o.label}
@@ -246,7 +252,6 @@ function AccountRow({
       }
       setState({ kind: "done", response: res });
 
-      // Auto-select the only slave, clear stale selections.
       let nextSelected: number | null | undefined = account.selected_slave_index;
       if (res.slaves.length === 1) {
         nextSelected = res.slaves[0].slave_index;
@@ -263,7 +268,6 @@ function AccountRow({
             selected_slave_index: nextSelected ?? null,
           });
         } catch {
-          // Selection persistence is best-effort; the check result itself is already saved.
         }
       }
     } catch (err) {
@@ -286,7 +290,7 @@ function AccountRow({
     setDeleting(true);
     try {
       await actions.deleteAccount(account.id);
-      toast.show("삭제됨", "info");
+      toast.show("삭제됨", "success");
     } catch (err) {
       toast.show(errorToMessage(err, "삭제 실패"), "error");
     } finally {
@@ -299,21 +303,21 @@ function AccountRow({
     account.kind === "integrated" ? "text-[#1ed760]" : "text-[#ffa42b]";
 
   return (
-    <div className="rounded-[8px] border border-[#272727] p-3">
-      <div className="flex items-start justify-between gap-3">
+    <div className="flex flex-col gap-4 rounded-[6px] bg-[#1a1a1a] p-4 transition-colors hover:bg-[#1f1f1f]">
+      <div className="flex items-start justify-between gap-4">
         <div className="min-w-0 flex-1">
-          <p className="truncate text-[14px] text-white">
+          <p className="truncate text-[15px] font-bold text-white">
             {account.label}
-            <span className={`ml-2 text-[11px] ${kindColor}`}>{kindLabel}</span>
+            <span className={`ml-3 text-[12px] uppercase tracking-wider ${kindColor}`}>{kindLabel}</span>
           </p>
-          <p className="truncate text-[12px] text-[#7c7c7c]">
+          <p className="mt-1 truncate text-[13px] text-[#7c7c7c]">
             {account.game_user_id}
             {account.last_checked_at
               ? ` · 최근 검사 ${formatRelative(account.last_checked_at)}`
               : ""}
           </p>
         </div>
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-3">
           <Button
             variant="secondary"
             size="sm"
@@ -322,17 +326,8 @@ function AccountRow({
           >
             {state.kind === "done" ? "재검사" : "검사"}
           </Button>
-          <Button variant="ghost" size="sm" onClick={() => setEditOpen(true)}>
-            수정
-          </Button>
-          <Button
-            variant="ghost"
-            size="sm"
-            loading={deleting}
-            onClick={handleRemove}
-          >
-            삭제
-          </Button>
+          <button type="button" onClick={() => setEditOpen(!editOpen)} className="text-[13px] font-bold text-[#b3b3b3] hover:text-white">수정</button>
+          <button type="button" onClick={handleRemove} disabled={deleting} className="text-[13px] font-bold text-[#b3b3b3] hover:text-[#f3727f] disabled:opacity-50">삭제</button>
         </div>
       </div>
 
@@ -354,7 +349,7 @@ function AccountRow({
       ) : null}
 
       {state.kind === "error" ? (
-        <p className="mt-2 text-[12px] text-[#f3727f]">{state.message}</p>
+        <p className="text-[13px] font-bold text-[#f3727f]">{state.message}</p>
       ) : null}
 
       {editOpen ? (
@@ -408,7 +403,7 @@ function EditAccountForm({
   };
 
   return (
-    <div className="mt-3 flex flex-col gap-3 rounded border border-[#2a2a2a] bg-[#121212] p-3">
+    <div className="mt-2 flex flex-col gap-4 rounded-[6px] border border-[#2a2a2a] bg-[#121212] p-4">
       <TextInput
         label="라벨"
         value={label}
@@ -421,11 +416,11 @@ function EditAccountForm({
         value={password}
         onChange={(e) => setPassword(e.target.value)}
       />
-      <div className="flex justify-end gap-2">
-        <Button variant="ghost" size="sm" onClick={onCancel}>
+      <div className="flex justify-end gap-3 pt-2">
+        <Button variant="ghost" onClick={onCancel}>
           취소
         </Button>
-        <Button size="sm" loading={saving} onClick={submit}>
+        <Button loading={saving} onClick={submit}>
           저장
         </Button>
       </div>
@@ -441,9 +436,9 @@ function CheckList({
   pending: boolean;
 }) {
   return (
-    <ul className="mt-2 flex flex-col gap-0.5 text-[12px]">
+    <ul className="flex flex-col gap-1 text-[13px] font-bold">
       {checks.map((c) => (
-        <li key={c.name} className="flex items-start gap-1.5">
+        <li key={c.name} className="flex items-center gap-2">
           <span
             className={c.passed ? "text-[#1ed760]" : "text-[#f3727f]"}
             aria-hidden
@@ -454,16 +449,16 @@ function CheckList({
             {CHECK_LABEL[c.name] ?? c.name}
           </span>
           {c.detail ? (
-            <span className="ml-1 text-[#7c7c7c]">· {c.detail}</span>
+            <span className="ml-1 text-[#7c7c7c] font-normal">· {c.detail}</span>
           ) : null}
         </li>
       ))}
       {pending ? (
-        <li className="flex items-center gap-1.5 text-[#7c7c7c]">
+        <li className="flex items-center gap-2 text-[#7c7c7c]">
           <span
             aria-hidden
             style={{ animation: "zh-spin 0.75s linear infinite" }}
-            className="inline-block h-3 w-3 rounded-full border-2 border-[#7c7c7c] border-t-[#1ed760]"
+            className="inline-block h-3 w-3 rounded-full border-[2px] border-[#7c7c7c] border-t-[#1ed760]"
           />
           검사 중…
         </li>
@@ -484,38 +479,36 @@ function SlaveList({
   if (slaves.length === 1) {
     const only = slaves[0];
     return (
-      <p className="mt-2 text-[12px] text-[#cbcbcb]">
+      <p className="text-[13px] font-bold text-[#cbcbcb]">
         캐릭터: <span className="text-white">{only.name}</span>{" "}
-        <span className="text-[#7c7c7c]">Lv.{formatNumber(only.level)}</span>
+        <span className="font-normal text-[#7c7c7c]">Lv.{formatNumber(only.level)}</span>
       </p>
     );
   }
   return (
-    <div className="mt-2">
-      <p className="text-[12px] text-[#b3b3b3]">캐릭터 선택</p>
-      <div className="mt-1 flex flex-col gap-0.5">
+    <div className="mt-1">
+      <p className="text-[13px] font-bold text-[#b3b3b3]">캐릭터 선택</p>
+      <div className="mt-2 flex flex-col gap-1">
         {slaves.map((s) => {
           const on = s.slave_index === selected;
           return (
             <label
               key={s.slave_index}
-              className={`flex cursor-pointer items-center justify-between rounded px-2 py-1 text-[12px] transition-colors ${
+              className={`group flex cursor-pointer items-center justify-between rounded-[4px] px-3 py-2 transition-colors ${
                 on
-                  ? "bg-[#1f1f1f] text-white"
-                  : "text-[#cbcbcb] hover:bg-[#1f1f1f]"
+                  ? "bg-[#2a2a2a]"
+                  : "hover:bg-[#2a2a2a]/50"
               }`}
             >
-              <span className="flex items-center gap-2">
-                <input
-                  type="radio"
-                  name={`slave-${s.slave_index}`}
-                  checked={on}
-                  onChange={() => onSelect(s.slave_index)}
-                  className="accent-[#1ed760]"
-                />
-                <span>{s.name}</span>
-              </span>
-              <span className="text-[#7c7c7c]">Lv.{formatNumber(s.level)}</span>
+              <div className="flex items-center gap-3">
+                <div className={`flex h-4 w-4 items-center justify-center rounded-full border-[2px] transition-colors ${on ? "border-[#1ed760]" : "border-[#7c7c7c]"}`}>
+                  {on && <div className="h-2 w-2 rounded-full bg-[#1ed760]" />}
+                </div>
+                <span className={`text-[13px] font-bold transition-colors ${on ? "text-white" : "text-[#b3b3b3] group-hover:text-white"}`}>
+                  {s.name}
+                </span>
+              </div>
+              <span className="text-[12px] font-bold text-[#7c7c7c]">Lv.{formatNumber(s.level)}</span>
             </label>
           );
         })}

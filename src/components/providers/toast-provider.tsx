@@ -32,20 +32,6 @@ export function useToast(): ToastContextValue {
   return ctx;
 }
 
-const TONE_BORDER: Record<ToastTone, string> = {
-  success: "border-[#1ed760]",
-  error: "border-[#f3727f]",
-  info: "border-[#539df5]",
-  warning: "border-[#ffa42b]",
-};
-
-const TONE_DOT: Record<ToastTone, string> = {
-  success: "bg-[#1ed760]",
-  error: "bg-[#f3727f]",
-  info: "bg-[#539df5]",
-  warning: "bg-[#ffa42b]",
-};
-
 export function ToastProvider({ children }: { children: React.ReactNode }) {
   const [entries, setEntries] = useState<ToastEntry[]>([]);
 
@@ -69,7 +55,7 @@ export function ToastProvider({ children }: { children: React.ReactNode }) {
       <div
         aria-live="polite"
         aria-atomic="true"
-        className="pointer-events-none fixed inset-x-0 bottom-6 z-[200] flex flex-col items-center gap-3 px-4 sm:bottom-8 sm:right-8 sm:left-auto sm:items-end"
+        className="pointer-events-none fixed inset-x-0 bottom-10 z-[200] flex flex-col items-center justify-end gap-3 px-4"
       >
         {entries.map((entry) => (
           <ToastCard
@@ -95,25 +81,28 @@ function ToastCard({
     return () => clearTimeout(timer);
   }, [onClose]);
 
+  const isSuccess = entry.tone === "success";
+  const isError = entry.tone === "error";
+  
+  const bgClass = isSuccess ? "bg-[#1ed760]" : isError ? "bg-[#f3727f]" : "bg-[#2a2a2a]";
+  const textClass = isSuccess || isError ? "text-black" : "text-white";
+
   return (
     <div
       role="status"
       style={{
-        animation: "zh-toast-in 200ms ease-out",
-        boxShadow: "var(--shadow-heavy)",
+        animation: "zh-toast-in 300ms cubic-bezier(0.16, 1, 0.3, 1)",
+        boxShadow: "0 8px 32px rgba(0,0,0,0.6)",
       }}
-      className={`pointer-events-auto flex w-full max-w-sm items-start gap-3 rounded-[8px] border bg-[#181818] px-4 py-3 ${TONE_BORDER[entry.tone]}`}
+      className={`pointer-events-auto flex items-center justify-between gap-4 rounded-full px-6 py-3 ${bgClass} ${textClass}`}
     >
-      <span
-        className={`mt-[6px] h-2 w-2 shrink-0 rounded-full ${TONE_DOT[entry.tone]}`}
-      />
-      <p className="flex-1 text-[14px] font-medium leading-snug text-white">
+      <p className="text-[14px] font-bold tracking-wide">
         {entry.message}
       </p>
       <button
         type="button"
         onClick={onClose}
-        className="shrink-0 rounded-full p-1 text-[14px] leading-none text-[#b3b3b3] transition-colors hover:text-white"
+        className="shrink-0 p-1 text-[16px] font-bold leading-none opacity-60 transition-opacity hover:opacity-100"
         aria-label="알림 닫기"
       >
         ×
