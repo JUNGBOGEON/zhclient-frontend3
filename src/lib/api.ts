@@ -198,6 +198,10 @@ export const api = {
   listMyMacros: () => request<JobResponse[]>("/macros"),
   getMacro: (id: string) =>
     request<JobResponse>(`/macros/${encodeURIComponent(id)}`),
+  cancelMacro: (id: string) =>
+    request<JobResponse>(`/macros/${encodeURIComponent(id)}/cancel`, {
+      method: "POST",
+    }),
   adminListMacros: (status?: MacroStatus) => {
     const q = status ? `?status=${encodeURIComponent(status)}` : "";
     return request<JobResponse[]>(`/admin/macros${q}`);

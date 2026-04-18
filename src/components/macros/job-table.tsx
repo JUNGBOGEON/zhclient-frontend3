@@ -1,7 +1,11 @@
 "use client";
 
+import { useState } from "react";
+
+import { useToast } from "@/components/providers/toast-provider";
 import { StatusDot } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { ApiError, api } from "@/lib/api";
 import { formatRelativeFromISO } from "@/lib/format";
 import type { JobResponse, MacroOpType, MacroStatus } from "@/types/api";
 
@@ -127,6 +131,9 @@ export function JobTable({
                   </td>
                   <td className="py-2.5 pr-3 text-[12px] text-[#b3b3b3]">
                     {formatRelativeFromISO(job.updated_at)}
+                    {job.status === "running" || job.status === "queued" ? (
+                      <CancelButton jobId={job.id} />
+                    ) : null}
                   </td>
                   <td className="py-2.5 pr-5 max-w-[280px]">
                     <JobResultCell job={job} />
@@ -140,6 +147,36 @@ export function JobTable({
     </section>
   );
 }
+
+function CancelButton({ jobId }: { jobId: string }) {
+  const toast = useToast();
+  const [busy, setBusy] = useState(false);
+  const onClick = async () => {
+    setBusy(true);
+    try {
+      await api.cancelMacro(jobId);
+      toast.show("중지 요청됨 — 곧 반영됩니다", "info");
+    } catch (err) {
+      toast.show(
+        err instanceof ApiError ? err.message : "중지 실패",
+        "error",
+      );
+    } finally {
+      setBusy(false);
+    }
+  };
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      disabled={busy}
+      className="ml-2 rounded px-1.5 py-0.5 text-[11px] text-[#f3727f] hover:bg-[#f3727f]/10 disabled:opacity-50"
+    >
+      {busy ? "중지중…" : "중지"}
+    </button>
+  );
+}
+
 
 function JobResultCell({ job }: { job: JobResponse }) {
   const checks = extractChecks(job.result);
