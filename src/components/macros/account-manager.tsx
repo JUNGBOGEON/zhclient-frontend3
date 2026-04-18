@@ -241,6 +241,7 @@ function AccountRow({
   const [state, setState] = useState<CheckState>(initialState);
   const [editOpen, setEditOpen] = useState(false);
   const [deleting, setDeleting] = useState(false);
+  const [pendingSlave, setPendingSlave] = useState<number | null>(null);
 
   const runCheck = useCallback(async () => {
     setState({ kind: "running", shown: [] });
@@ -278,10 +279,27 @@ function AccountRow({
   }, [account, actions, toast]);
 
   const selectSlave = async (slave_index: number) => {
+    if (
+      slave_index === account.selected_slave_index ||
+      pendingSlave === slave_index
+    ) {
+      return;
+    }
+    setPendingSlave(slave_index);
+    const slaveName =
+      state.kind === "done"
+        ? state.response.slaves.find((s) => s.slave_index === slave_index)?.name
+        : undefined;
     try {
       await actions.updateAccount(account.id, { selected_slave_index: slave_index });
+      toast.show(
+        slaveName ? `${slaveName} 선택됨` : "캐릭터 선택됨",
+        "success",
+      );
     } catch (err) {
       toast.show(errorToMessage(err, "선택 저장 실패"), "error");
+    } finally {
+      setPendingSlave(null);
     }
   };
 
@@ -343,7 +361,10 @@ function AccountRow({
       {state.kind === "done" && state.response.slaves.length > 0 ? (
         <SlaveList
           slaves={state.response.slaves}
-          selected={account.selected_slave_index ?? null}
+          selected={
+            pendingSlave ?? account.selected_slave_index ?? null
+          }
+          pending={pendingSlave}
           onSelect={selectSlave}
         />
       ) : null}
@@ -470,10 +491,12 @@ function CheckList({
 function SlaveList({
   slaves,
   selected,
+  pending,
   onSelect,
 }: {
   slaves: AccountCheckResponse["slaves"];
   selected: number | null;
+  pending: number | null;
   onSelect: (slave_index: number) => void;
 }) {
   if (slaves.length === 1) {
@@ -491,12 +514,14 @@ function SlaveList({
       <div className="mt-2 flex flex-col gap-1">
         {slaves.map((s) => {
           const on = s.slave_index === selected;
+          const saving = pending === s.slave_index;
           return (
             <button
               key={s.slave_index}
               type="button"
               onClick={() => onSelect(s.slave_index)}
-              className={`group flex w-full cursor-pointer items-center justify-between rounded-[4px] px-3 py-2 text-left transition-colors ${
+              disabled={pending !== null}
+              className={`group flex w-full cursor-pointer items-center justify-between rounded-[4px] px-3 py-2 text-left transition-colors disabled:cursor-wait disabled:opacity-60 ${
                 on
                   ? "bg-[#2a2a2a]"
                   : "hover:bg-[#2a2a2a]/50"
@@ -504,11 +529,22 @@ function SlaveList({
             >
               <div className="flex items-center gap-3">
                 <div className={`flex h-4 w-4 items-center justify-center rounded-full border-[2px] transition-colors ${on ? "border-[#1ed760]" : "border-[#7c7c7c]"}`}>
-                  {on && <div className="h-2 w-2 rounded-full bg-[#1ed760]" />}
+                  {saving ? (
+                    <span
+                      aria-hidden
+                      style={{ animation: "zh-spin 0.75s linear infinite" }}
+                      className="inline-block h-2.5 w-2.5 rounded-full border-2 border-[#7c7c7c] border-t-[#1ed760]"
+                    />
+                  ) : on ? (
+                    <div className="h-2 w-2 rounded-full bg-[#1ed760]" />
+                  ) : null}
                 </div>
                 <span className={`text-[13px] font-bold transition-colors ${on ? "text-white" : "text-[#b3b3b3] group-hover:text-white"}`}>
                   {s.name}
                 </span>
+                {saving ? (
+                  <span className="text-[11px] font-bold text-[#1ed760]">저장 중…</span>
+                ) : null}
               </div>
               <span className="text-[12px] font-bold text-[#7c7c7c]">Lv.{formatNumber(s.level)}</span>
             </button>
