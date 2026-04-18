@@ -3,9 +3,8 @@
 import { useCallback, useEffect, useState } from "react";
 
 import { useToast } from "@/components/providers/toast-provider";
-import { StatusDot } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { TextInput } from "@/components/ui/input";
+import { SearchInput } from "@/components/ui/input";
 import { ApiError, api } from "@/lib/api";
 import { formatRelativeFromISO } from "@/lib/format";
 import type { JobResponse, MacroOpType, MacroStatus } from "@/types/api";
@@ -31,9 +30,9 @@ const OP_LABEL: Record<MacroOpType, string> = {
   rename: "닉변",
   character: "캐릭터",
   snipe: "스나이프",
-  snipe_rename: "닉변 스나이프",
-  snipe_character: "캐릭터 스나이프",
-  snipe_badname: "미통디 스나이프",
+  snipe_rename: "닉변",
+  snipe_character: "캐릭터",
+  snipe_badname: "미통디",
 };
 
 // ─── 현재 실행중 ────────────────────────────────────────────────────
@@ -52,20 +51,20 @@ export function ActiveJobsCard({
   lastUpdated?: number | null;
 }) {
   return (
-    <section className="rounded-[8px] bg-[#181818]">
-      <header className="flex items-center justify-between gap-3 border-b border-[#272727] px-5 py-3">
-        <div>
-          <h2 className="text-[15px] font-semibold text-white">현재 실행중</h2>
-          <p className="mt-0.5 text-[12px] text-[#7c7c7c]">
+    <section className="flex flex-col gap-6 pt-4">
+      <header className="flex items-center justify-between gap-3">
+        <div className="flex items-center gap-4">
+          <h2 className="text-[24px] font-bold tracking-tight text-white">현재 실행중</h2>
+          <span className="text-[14px] text-[#7c7c7c]">
             {jobs.length}개
             {lastUpdated
               ? ` · ${new Date(lastUpdated).toLocaleTimeString("ko-KR")}`
               : ""}
-          </p>
+          </span>
         </div>
         {onRefresh ? (
           <Button
-            variant="secondary"
+            variant="ghost"
             size="sm"
             loading={refreshing}
             onClick={onRefresh}
@@ -108,8 +107,6 @@ export function HistoryJobsCard() {
     return () => clearTimeout(timer);
   }, [search]);
 
-  // Reset page when filter / search changes (React-approved sentinel pattern
-  // so we don't trigger the no-setState-in-effect rule).
   const currentKey = `${filter}|${debouncedSearch}`;
   if (currentKey !== resetKey) {
     setResetKey(currentKey);
@@ -189,15 +186,13 @@ export function HistoryJobsCard() {
   const pageCount = Math.max(1, Math.ceil(total / PAGE_SIZE));
 
   return (
-    <section className="rounded-[8px] bg-[#181818]">
-      <header className="flex flex-col gap-3 border-b border-[#272727] px-5 py-3 lg:flex-row lg:items-center lg:justify-between">
-        <div>
-          <h2 className="text-[15px] font-semibold text-white">이전 로그</h2>
-          <p className="mt-0.5 text-[12px] text-[#7c7c7c]">
-            총 {total}개
-          </p>
+    <section className="mt-10 flex flex-col gap-6">
+      <header className="flex flex-col gap-6 lg:flex-row lg:items-center lg:justify-between">
+        <div className="flex items-center gap-4">
+          <h2 className="text-[24px] font-bold tracking-tight text-white">이전 로그</h2>
+          <span className="text-[14px] text-[#7c7c7c]">총 {total}개</span>
         </div>
-        <div className="flex flex-wrap items-center gap-2">
+        <div className="flex flex-wrap items-center gap-3">
           {STATUS_FILTERS.map((f) => {
             const on = filter === f.key;
             return (
@@ -205,29 +200,30 @@ export function HistoryJobsCard() {
                 key={f.key}
                 type="button"
                 onClick={() => setFilter(f.key)}
-                className={`rounded-full px-3 py-1 text-[12px] transition-colors ${
+                className={`rounded-full px-4 py-1.5 text-[13px] font-bold transition-colors ${
                   on
-                    ? "bg-[#1ed760] text-black"
-                    : "bg-[#1f1f1f] text-[#b3b3b3] hover:text-white"
+                    ? "bg-white text-black"
+                    : "bg-[#1f1f1f] text-[#b3b3b3] hover:bg-[#2a2a2a] hover:text-white"
                 }`}
               >
                 {f.label}
               </button>
             );
           })}
-          <div className="w-40">
-            <TextInput
+          <div className="ml-2 w-48">
+            <SearchInput
               placeholder="닉네임 검색"
               value={search}
               onChange={(e) => setSearch(e.target.value)}
             />
           </div>
           <Button
-            variant="outline"
+            variant="ghost"
             size="sm"
             loading={pendingBulk}
             disabled={jobs.length === 0}
             onClick={handleBulkDelete}
+            className="text-[#f3727f] hover:bg-[#f3727f]/10 hover:text-[#f3727f]"
           >
             일괄 삭제
           </Button>
@@ -243,35 +239,31 @@ export function HistoryJobsCard() {
       />
 
       {pageCount > 1 ? (
-        <div className="flex items-center justify-between gap-3 border-t border-[#272727] px-5 py-2 text-[12px] text-[#b3b3b3]">
-          <span>
-            {page + 1} / {pageCount} 페이지
+        <div className="mt-4 flex items-center justify-center gap-4">
+          <Button
+            variant="ghost"
+            onClick={() => setPage((p) => Math.max(0, p - 1))}
+            disabled={page === 0 || loading}
+          >
+            이전
+          </Button>
+          <span className="text-[13px] font-bold text-[#b3b3b3]">
+            {page + 1} / {pageCount}
           </span>
-          <div className="flex items-center gap-1">
-            <button
-              type="button"
-              disabled={page === 0 || loading}
-              onClick={() => setPage((p) => Math.max(0, p - 1))}
-              className="rounded px-2 py-1 text-[12px] text-[#b3b3b3] hover:text-white disabled:opacity-40"
-            >
-              이전
-            </button>
-            <button
-              type="button"
-              disabled={page + 1 >= pageCount || loading}
-              onClick={() => setPage((p) => p + 1)}
-              className="rounded px-2 py-1 text-[12px] text-[#b3b3b3] hover:text-white disabled:opacity-40"
-            >
-              다음
-            </button>
-          </div>
+          <Button
+            variant="ghost"
+            onClick={() => setPage((p) => p + 1)}
+            disabled={page + 1 >= pageCount || loading}
+          >
+            다음
+          </Button>
         </div>
       ) : null}
     </section>
   );
 }
 
-// ─── 공용 테이블 바디 ────────────────────────────────────────────────
+// ─── 공용 테이블 바디 (Tracklist Style) ────────────────────────────────
 
 function JobTableBody({
   jobs,
@@ -288,93 +280,80 @@ function JobTableBody({
 }) {
   if (loading && jobs.length === 0) {
     return (
-      <div className="px-5 py-8 text-center text-[13px] text-[#7c7c7c]">
-        불러오는 중…
+      <div className="py-20 text-center text-[15px] font-bold text-[#b3b3b3]">
+        로그를 불러오는 중입니다...
       </div>
     );
   }
   if (jobs.length === 0) {
     return (
-      <div className="px-5 py-8 text-center text-[13px] text-[#7c7c7c]">
+      <div className="py-20 text-center text-[15px] font-bold text-[#7c7c7c]">
         {emptyText}
       </div>
     );
   }
+
   return (
-    <div className="overflow-x-auto">
-      <table className="w-full min-w-[720px] text-left">
-        <thead>
-          <tr className="text-[12px] text-[#7c7c7c]">
-            <th className="py-2 pl-5 pr-3 font-normal">상태</th>
-            <th className="py-2 pr-3 font-normal">유형</th>
-            <th className="py-2 pr-3 font-normal">대상</th>
-            <th className="py-2 pr-3 font-normal">시도</th>
-            <th className="py-2 pr-3 font-normal">업데이트</th>
-            <th className="py-2 pr-5 font-normal">결과</th>
-            {deletable ? <th className="py-2 pr-5 font-normal"></th> : null}
-          </tr>
-        </thead>
-        <tbody className="divide-y divide-[#272727]">
-          {jobs.map((job) => (
-            <tr key={job.id} className="align-top">
-              <td className="py-2.5 pl-5 pr-3">
-                <div className="flex items-center gap-2">
-                  <StatusDot
-                    tone={
-                      job.status === "succeeded"
-                        ? "success"
-                        : job.status === "failed"
-                          ? "danger"
-                          : job.status === "running"
-                            ? "info"
-                            : job.status === "queued"
-                              ? "warning"
-                              : "neutral"
-                    }
-                  />
-                  <span className={`text-[12px] ${STATUS_COLOR[job.status]}`}>
-                    {STATUS_LABEL[job.status]}
-                  </span>
-                </div>
-              </td>
-              <td className="py-2.5 pr-3 text-[13px] text-[#cbcbcb]">
-                {OP_LABEL[job.op_type]}
-              </td>
-              <td className="py-2.5 pr-3 max-w-[220px]">
-                <p className="truncate text-[13px] text-white">
-                  {extractNickname(job.payload) ?? "—"}
-                </p>
-                <p className="truncate text-[11px] text-[#7c7c7c]">
-                  {job.id.slice(0, 8)}
-                </p>
-              </td>
-              <td className="py-2.5 pr-3 text-[13px] text-[#cbcbcb]">
-                {job.attempts} / {job.max_attempts}
-              </td>
-              <td className="py-2.5 pr-3 text-[12px] text-[#b3b3b3]">
-                {formatRelativeFromISO(job.updated_at)}
-                {job.status === "running" || job.status === "queued" ? (
+    <div className="flex flex-col">
+      <div className="flex items-center gap-4 px-4 py-2 text-[12px] font-bold uppercase tracking-[1.4px] text-[#b3b3b3]">
+        <div className="w-20">상태</div>
+        <div className="w-16">유형</div>
+        <div className="w-32">대상</div>
+        <div className="w-16">시도</div>
+        <div className="w-28">업데이트</div>
+        <div className="min-w-0 flex-1">결과</div>
+        {deletable && <div className="w-10"></div>}
+      </div>
+      <div className="mb-2 h-[1px] w-full bg-[#272727]" />
+
+      <div className="flex flex-col gap-1">
+        {jobs.map((job) => (
+          <div
+            key={job.id}
+            className="group flex items-start gap-4 rounded-[6px] px-4 py-3 transition-colors hover:bg-[#1f1f1f]"
+          >
+            <div className="w-20 pt-0.5 text-[13px] font-bold">
+              <span className={STATUS_COLOR[job.status]}>{STATUS_LABEL[job.status]}</span>
+            </div>
+            <div className="w-16 pt-0.5 text-[13px] text-[#cbcbcb]">
+              {OP_LABEL[job.op_type]}
+            </div>
+            <div className="flex w-32 flex-col">
+              <span className="truncate text-[14px] font-bold text-white">
+                {extractNickname(job.payload) ?? "—"}
+              </span>
+              <span className="text-[11px] text-[#7c7c7c]">
+                {job.id.slice(0, 8)}
+              </span>
+            </div>
+            <div className="w-16 pt-0.5 text-[13px] text-[#cbcbcb]">
+              {job.attempts} / {job.max_attempts}
+            </div>
+            <div className="flex w-28 flex-col pt-0.5 text-[12px] text-[#b3b3b3]">
+              <span>{formatRelativeFromISO(job.updated_at)}</span>
+              {job.status === "running" || job.status === "queued" ? (
+                <div className="mt-1">
                   <CancelButton jobId={job.id} />
-                ) : null}
-              </td>
-              <td className="py-2.5 pr-5 max-w-[280px]">
-                <JobResultCell job={job} />
-              </td>
-              {deletable ? (
-                <td className="py-2.5 pr-5">
-                  <button
-                    type="button"
-                    onClick={() => onDelete?.(job.id)}
-                    className="text-[11px] text-[#7c7c7c] hover:text-[#f3727f]"
-                  >
-                    삭제
-                  </button>
-                </td>
+                </div>
               ) : null}
-            </tr>
-          ))}
-        </tbody>
-      </table>
+            </div>
+            <div className="min-w-0 flex-1 pt-0.5">
+              <JobResultCell job={job} />
+            </div>
+            {deletable && (
+              <div className="w-10 pt-0.5 text-right">
+                <button
+                  type="button"
+                  onClick={() => onDelete?.(job.id)}
+                  className="text-[12px] text-[#7c7c7c] opacity-0 transition-opacity hover:text-[#f3727f] group-hover:opacity-100"
+                >
+                  삭제
+                </button>
+              </div>
+            )}
+          </div>
+        ))}
+      </div>
     </div>
   );
 }
@@ -398,7 +377,7 @@ function CancelButton({ jobId }: { jobId: string }) {
       type="button"
       onClick={onClick}
       disabled={busy}
-      className="ml-2 rounded px-1.5 py-0.5 text-[11px] text-[#f3727f] hover:bg-[#f3727f]/10 disabled:opacity-50"
+      className="rounded px-1.5 py-0.5 text-[11px] text-[#f3727f] hover:bg-[#f3727f]/10 disabled:opacity-50"
     >
       {busy ? "중지중…" : "중지"}
     </button>
@@ -421,7 +400,7 @@ function JobResultCell({ job }: { job: JobResponse }) {
   }
   if (job.status === "succeeded") {
     return (
-      <span className="text-[12px] text-[#1ed760]">
+      <span className="text-[13px] font-bold text-[#1ed760]">
         {summariseResult(job.result)}
       </span>
     );
@@ -432,13 +411,13 @@ function JobResultCell({ job }: { job: JobResponse }) {
       return <LiveProgressView progress={live} />;
     }
     return (
-      <span className="text-[12px] text-[#b3b3b3]">
+      <span className="text-[13px] font-bold text-[#b3b3b3]">
         {summariseResult(job.result) || "실행 중…"}
       </span>
     );
   }
   return (
-    <span className="text-[12px] text-[#7c7c7c]">
+    <span className="text-[13px] text-[#7c7c7c]">
       {summariseResult(job.result) || "—"}
     </span>
   );
@@ -496,13 +475,13 @@ function ChecksView({
   const passed = checks.filter((c) => c.passed);
   return (
     <details className="group">
-      <summary className="cursor-pointer list-none text-[12px] text-[#f3727f]">
+      <summary className="cursor-pointer list-none text-[13px] font-bold text-[#f3727f]">
         <span className="line-clamp-2">{error}</span>
-        <span className="text-[11px] text-[#7c7c7c] group-open:hidden">
+        <span className="text-[11px] font-normal text-[#7c7c7c] group-open:hidden">
           클릭해서 체크 상세 보기
         </span>
       </summary>
-      <div className="mt-1.5 flex flex-col gap-1 text-[11px]">
+      <div className="mt-1.5 flex flex-col gap-1 text-[11px] font-normal">
         {failed.map((c) => (
           <div key={c.name} className="flex items-start gap-1.5">
             <span className="mt-0.5 text-[#f3727f]">✗</span>
@@ -579,7 +558,7 @@ function LiveProgressView({ progress }: { progress: LiveProgress }) {
   const elapsed = `${mm.toString().padStart(2, "0")}:${ss.toString().padStart(2, "0")}`;
   return (
     <details className="group" open>
-      <summary className="cursor-pointer list-none text-[12px] text-[#539df5]">
+      <summary className="cursor-pointer list-none text-[13px] font-bold text-[#539df5]">
         <div className="flex items-center gap-2">
           <span
             aria-hidden
@@ -591,7 +570,7 @@ function LiveProgressView({ progress }: { progress: LiveProgress }) {
             {progress.requested_rate.toFixed(1)} req/s · {elapsed}
           </span>
         </div>
-        <div className="mt-0.5 flex flex-wrap gap-3 text-[11px] text-[#7c7c7c]">
+        <div className="mt-0.5 flex flex-wrap gap-3 text-[11px] font-normal text-[#7c7c7c]">
           <span>try 300: {p.try_300}</span>
           <span>try 409: {p.try_409}</span>
           <span className={p.confirm_ok > 0 ? "text-[#1ed760]" : ""}>
@@ -611,13 +590,13 @@ function LiveProgressView({ progress }: { progress: LiveProgress }) {
         </div>
       </summary>
       {progress.recent.length > 0 ? (
-        <div className="mt-2 flex flex-col gap-0.5 text-[11px]">
+        <div className="mt-2 flex flex-col gap-0.5 text-[11px] font-normal">
           {progress.recent
             .slice()
             .reverse()
             .slice(0, 12)
             .map((ev, idx) => {
-              const meta =
+               const meta =
                 EVENT_LABEL[ev.kind] ?? {
                   label: ev.kind,
                   color: "text-[#cbcbcb]",
@@ -639,8 +618,6 @@ function LiveProgressView({ progress }: { progress: LiveProgress }) {
   );
 }
 
-// ─── 유틸 ────────────────────────────────────────────────────────────
-
 function extractNickname(
   payload: Record<string, unknown> | null,
 ): string | null {
@@ -660,6 +637,3 @@ function summariseResult(result: Record<string, unknown> | null): string {
   if (typeof summary === "string") return summary;
   return "완료";
 }
-
-/** Backward-compat default export so existing imports keep working. */
-export const JobTable = ActiveJobsCard;
