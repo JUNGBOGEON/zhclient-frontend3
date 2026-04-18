@@ -1,0 +1,177 @@
+@import "tailwindcss";
+
+@theme {
+  --color-bg-base: #121212;
+  --color-bg-surface: #181818;
+  --color-bg-interactive: #1f1f1f;
+  --color-bg-card: #252525;
+  --color-bg-card-alt: #272727;
+  --color-bg-light: #eeeeee;
+
+  --color-text-base: #ffffff;
+  --color-text-muted: #b3b3b3;
+  --color-text-subtle: #cbcbcb;
+  --color-text-bright: #fdfdfd;
+  --color-text-faint: #7c7c7c;
+
+  --color-brand: #1ed760;
+  --color-brand-hover: #1fdf64;
+  --color-brand-active: #169c46;
+  --color-brand-border: #1db954;
+
+  --color-negative: #f3727f;
+  --color-warning: #ffa42b;
+  --color-announce: #539df5;
+
+  --color-border-base: #4d4d4d;
+  --color-border-muted: #7c7c7c;
+  --color-border-divider: #2a2a2a;
+
+  --shadow-heavy: 0 8px 24px rgba(0, 0, 0, 0.5);
+  --shadow-medium: 0 8px 8px rgba(0, 0, 0, 0.3);
+
+  --font-display:
+    "SpotifyMixUITitle", "CircularSp-Arab", "CircularSp-Hebr",
+    "CircularSp-Cyrl", "CircularSp-Grek", "CircularSp-Deva",
+    "Helvetica Neue", helvetica, arial, "Hiragino Sans",
+    "Hiragino Kaku Gothic ProN", "Apple SD Gothic Neo", "Pretendard",
+    "Malgun Gothic", Meiryo, "MS Gothic", sans-serif;
+  --font-ui:
+    "SpotifyMixUI", "CircularSp-Arab", "CircularSp-Hebr", "CircularSp-Cyrl",
+    "CircularSp-Grek", "CircularSp-Deva", "Helvetica Neue", helvetica,
+    arial, "Hiragino Sans", "Hiragino Kaku Gothic ProN",
+    "Apple SD Gothic Neo", "Pretendard", "Malgun Gothic", Meiryo,
+    "MS Gothic", sans-serif;
+}
+
+:root {
+  color-scheme: dark;
+}
+
+html,
+body {
+  background: #121212;
+  color: #ffffff;
+  font-family: var(--font-ui);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+body {
+  min-height: 100dvh;
+}
+
+::selection {
+  background: #1ed760;
+  color: #000000;
+}
+
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #3a3a3a;
+  border-radius: 9999px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #5a5a5a;
+}
+
+button:focus-visible,
+a:focus-visible,
+input:focus-visible,
+textarea:focus-visible,
+select:focus-visible,
+[tabindex]:focus-visible {
+  outline: 2px solid #1ed760;
+  outline-offset: 2px;
+  border-radius: inherit;
+}
+
+input[type="range"] {
+  -webkit-appearance: none;
+  appearance: none;
+  background: transparent;
+  width: 100%;
+}
+
+input[type="range"]::-webkit-slider-runnable-track {
+  height: 4px;
+  background: #4d4d4d;
+  border-radius: 9999px;
+}
+
+input[type="range"]::-moz-range-track {
+  height: 4px;
+  background: #4d4d4d;
+  border-radius: 9999px;
+}
+
+input[type="range"]::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  margin-top: -6px;
+  height: 16px;
+  width: 16px;
+  border-radius: 50%;
+  background: #ffffff;
+  border: none;
+  cursor: pointer;
+  transition: transform 0.15s ease;
+}
+
+input[type="range"]::-moz-range-thumb {
+  height: 16px;
+  width: 16px;
+  border-radius: 50%;
+  background: #ffffff;
+  border: none;
+  cursor: pointer;
+  transition: transform 0.15s ease;
+}
+
+input[type="range"]:hover::-webkit-slider-thumb,
+input[type="range"]:focus::-webkit-slider-thumb {
+  transform: scale(1.15);
+  background: #1ed760;
+}
+
+input[type="range"]:hover::-moz-range-thumb,
+input[type="range"]:focus::-moz-range-thumb {
+  transform: scale(1.15);
+  background: #1ed760;
+}
+
+@keyframes zh-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@keyframes zh-toast-in {
+  from {
+    opacity: 0;
+    transform: translateY(16px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes zh-pulse-dot {
+  0%,
+  100% {
+    opacity: 0.4;
+  }
+  50% {
+    opacity: 1;
+  }
+}
