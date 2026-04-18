@@ -199,11 +199,11 @@ type LiveProgress = {
 };
 
 const EVENT_LABEL: Record<string, { label: string; color: string }> = {
-  try_300: { label: "사용 가능 감지", color: "text-[#1ed760]" },
-  try_409: { label: "이미 사용중", color: "text-[#7c7c7c]" },
+  try_300: { label: "휴먼 닉 감지", color: "text-[#1ed760]" },
+  try_409: { label: "사용중", color: "text-[#7c7c7c]" },
   try_other: { label: "기타 응답", color: "text-[#7c7c7c]" },
   confirm_ok: { label: "선점 성공", color: "text-[#1ed760]" },
-  confirm_409: { label: "타인 선점", color: "text-[#ffa42b]" },
+  confirm_409: { label: "휴먼 상태 유지", color: "text-[#ffa42b]" },
   captcha_fail: { label: "캡챠 실패", color: "text-[#ffa42b]" },
   error: { label: "에러", color: "text-[#f3727f]" },
 };
