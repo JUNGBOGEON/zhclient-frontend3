@@ -299,7 +299,6 @@ function JobTableBody({
         <div className="w-20">상태</div>
         <div className="w-16">유형</div>
         <div className="w-32">대상</div>
-        <div className="w-16">시도</div>
         <div className="w-28">업데이트</div>
         <div className="min-w-0 flex-1">결과</div>
         {deletable && <div className="w-10"></div>}
@@ -325,9 +324,6 @@ function JobTableBody({
               <span className="text-[11px] text-[#7c7c7c]">
                 {job.id.slice(0, 8)}
               </span>
-            </div>
-            <div className="w-16 pt-0.5 text-[13px] text-[#cbcbcb]">
-              {job.attempts} / {job.max_attempts}
             </div>
             <div className="flex w-28 flex-col pt-0.5 text-[12px] text-[#b3b3b3]">
               <span>{formatRelativeFromISO(job.updated_at)}</span>
