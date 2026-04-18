@@ -199,7 +199,7 @@ type LiveProgress = {
 };
 
 const EVENT_LABEL: Record<string, { label: string; color: string }> = {
-  try_300: { label: "휴먼 닉 감지", color: "text-[#1ed760]" },
+  try_300: { label: "캡챠 시도", color: "text-[#539df5]" },
   try_409: { label: "사용중", color: "text-[#7c7c7c]" },
   try_other: { label: "기타 응답", color: "text-[#7c7c7c]" },
   confirm_ok: { label: "선점 성공", color: "text-[#1ed760]" },
