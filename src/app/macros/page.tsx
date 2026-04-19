@@ -222,7 +222,7 @@ function MacroForm({
     eligibleAccounts[0]?.id ?? "",
   );
   const [nickname, setNickname] = useState("");
-  const [rate, setRate] = useState<number>(5);
+  const [rate, setRate] = useState<number>(2);
   const [submitting, setSubmitting] = useState(false);
 
   const selected = eligibleAccounts.find((a) => a.id === accountId) ?? null;

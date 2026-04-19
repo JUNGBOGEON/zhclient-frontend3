@@ -20,7 +20,7 @@ export function SnipeControls({ rate, onRateChange }: SnipeControlsProps) {
         id="snipe-rate"
         type="range"
         min={0.5}
-        max={50}
+        max={10}
         step={0.5}
         value={rate}
         onChange={(e) => onRateChange(Number(e.target.value))}
@@ -28,8 +28,8 @@ export function SnipeControls({ rate, onRateChange }: SnipeControlsProps) {
       />
       <div className="flex justify-between text-[11px] text-[#7c7c7c]">
         <span>0.5</span>
-        <span>25</span>
-        <span>50</span>
+        <span>5</span>
+        <span>10</span>
       </div>
       <p className="text-[12px] text-[#7c7c7c]">
         닉네임이 먹힐 때까지 계속 시도합니다. 중단하려면 작업을 취소하세요.
