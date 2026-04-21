@@ -438,6 +438,8 @@ const CHECK_LABEL: Record<string, string> = {
   xigncode_cookie: "XIGNCODE 쿠키",
   server_reachable: "서버 접속",
   integrated_account: "통합계정 여부",
+  legacy_account: "미통합 계정 여부",
+  linked_to_integrated: "통합 계정 연결",
   account_not_banned: "계정 정지 여부",
   credentials: "아이디/비번",
   character_exists: "캐릭터 존재",
