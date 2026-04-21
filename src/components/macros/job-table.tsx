@@ -21,10 +21,10 @@ const OP_LABEL: Record<MacroOpType, string> = {
   badname: "미통디 닉변",
   rename: "통합 닉변",
   character: "캐릭터 생성",
-  snipe: "스나이프",
-  snipe_rename: "닉변 스나이프",
-  snipe_character: "캐릭터 스나이프",
-  snipe_badname: "미통디 스나이프",
+  snipe: "매크로",
+  snipe_rename: "닉변 매크로",
+  snipe_character: "캐릭터 매크로",
+  snipe_badname: "미통디 매크로",
 };
 
 const LEGACY_OP_TYPES: ReadonlySet<MacroOpType> = new Set<MacroOpType>([
