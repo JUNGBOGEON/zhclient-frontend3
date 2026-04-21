@@ -18,14 +18,19 @@ const STATUS_LABEL: Record<MacroStatus, string> = {
 };
 
 const OP_LABEL: Record<MacroOpType, string> = {
-  badname: "미통디",
-  rename: "닉변",
-  character: "캐릭터",
+  badname: "미통디 닉변",
+  rename: "통합 닉변",
+  character: "캐릭터 생성",
   snipe: "스나이프",
-  snipe_rename: "닉변",
-  snipe_character: "캐릭터",
-  snipe_badname: "미통디",
+  snipe_rename: "닉변 스나이프",
+  snipe_character: "캐릭터 스나이프",
+  snipe_badname: "미통디 스나이프",
 };
+
+const LEGACY_OP_TYPES: ReadonlySet<MacroOpType> = new Set<MacroOpType>([
+  "badname",
+  "snipe_badname",
+]);
 
 // ─── 현재 실행중 ────────────────────────────────────────────────────
 
@@ -363,14 +368,37 @@ function JobTableBody({
                 </div>
               </div>
 
-              {/* 제목 (타겟 닉네임) & 아티스트 (유형 및 Job ID) */}
-              <div className="flex min-w-0 flex-1 flex-col justify-center">
+              {/* 제목 (타겟 닉네임) & 메타 (계정 종류 / 유형 / 로그인 ID / 슬롯) */}
+              <div className="flex min-w-0 flex-1 flex-col justify-center gap-1">
                 <span className={`truncate text-[16px] font-bold ${titleColor}`}>
-                  {extractNickname(job.payload) ?? "알 수 없음"}
+                  → {extractNickname(job.payload) ?? "알 수 없음"}
                 </span>
-                <span className="truncate text-[13px] font-bold text-[#b3b3b3] group-hover:text-white transition-colors">
-                  {OP_LABEL[job.op_type]} <span className="mx-1 text-[#7c7c7c]">·</span> {job.id.slice(0, 8)}
-                </span>
+                <div className="flex flex-wrap items-center gap-x-2 gap-y-1 text-[12px] font-bold text-[#b3b3b3] group-hover:text-white transition-colors">
+                  <span
+                    className={`rounded-full px-2 py-[2px] text-[10px] tracking-[0.08em] ${
+                      LEGACY_OP_TYPES.has(job.op_type)
+                        ? "bg-[#2a1f1a] text-[#f3b57c]"
+                        : "bg-[#1a2a2a] text-[#7ce5e5]"
+                    }`}
+                  >
+                    {LEGACY_OP_TYPES.has(job.op_type) ? "미통디" : "통합"}
+                  </span>
+                  <span>{OP_LABEL[job.op_type]}</span>
+                  {extractUserId(job.payload) ? (
+                    <>
+                      <span className="text-[#7c7c7c]">·</span>
+                      <span className="truncate">{extractUserId(job.payload)}</span>
+                    </>
+                  ) : null}
+                  {extractSlaveIndex(job.payload) !== null ? (
+                    <>
+                      <span className="text-[#7c7c7c]">·</span>
+                      <span>슬롯 {extractSlaveIndex(job.payload)}</span>
+                    </>
+                  ) : null}
+                  <span className="text-[#7c7c7c]">·</span>
+                  <span className="truncate">{job.id.slice(0, 8)}</span>
+                </div>
               </div>
 
               {/* 앨범/상태 영역 (결과 로그 및 세부 사항) */}
@@ -626,6 +654,23 @@ function extractNickname(
   const value = payload["nickname"];
   if (typeof value === "string" && value.length > 0) return value;
   return null;
+}
+
+function extractUserId(
+  payload: Record<string, unknown> | null,
+): string | null {
+  if (!payload) return null;
+  const value = payload["user_id"];
+  if (typeof value === "string" && value.length > 0) return value;
+  return null;
+}
+
+function extractSlaveIndex(
+  payload: Record<string, unknown> | null,
+): number | null {
+  if (!payload) return null;
+  const value = payload["slave_index"];
+  return typeof value === "number" ? value : null;
 }
 
 function summariseSuccess(result: Record<string, unknown> | null): string {
