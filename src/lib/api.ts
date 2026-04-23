@@ -255,6 +255,11 @@ export const api = {
       `/me/accounts/${encodeURIComponent(id)}/check`,
       { method: "POST" },
     ),
+  rerollMyAccountDevice: (id: string) =>
+    request<StoredAccount>(
+      `/me/accounts/${encodeURIComponent(id)}/reroll-device`,
+      { method: "POST" },
+    ),
 };
 
 export const API_BASE_URL = BASE_URL;

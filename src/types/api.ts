@@ -231,6 +231,11 @@ export interface StoredAccount {
   last_check?: AccountCheckResponse | null;
   created_at: string;
   updated_at?: string;
+  device_model: string;
+  device_label?: string | null;
+  os_version: string;
+  device_id_preview: string;
+  device_profile_id?: number | null;
 }
 
 export interface CreateAccountPayload {

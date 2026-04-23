@@ -387,6 +387,7 @@ function AccountPicker({
                   <span className="text-[12px] text-[#7c7c7c]">
                     {acct.game_user_id}
                   </span>
+                  <DeviceBadge account={acct} />
                 </div>
               </div>
               <span className="text-[12px] font-bold uppercase tracking-wider">
@@ -438,6 +439,31 @@ function SlaveReadout({
         변경
       </button>
     </div>
+  );
+}
+
+function DeviceBadge({ account }: { account: StoredAccount }) {
+  const name = account.device_label ?? account.device_model;
+  return (
+    <span className="mt-1 inline-flex items-center gap-1.5 text-[11px] text-[#6f6f6f]">
+      <svg
+        width="11"
+        height="11"
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="currentColor"
+        strokeWidth="2"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        aria-hidden
+      >
+        <rect x="5" y="2" width="14" height="20" rx="2" ry="2" />
+        <line x1="12" y1="18" x2="12.01" y2="18" />
+      </svg>
+      <span className="font-bold text-[#b3b3b3]">{name}</span>
+      <span className="text-[#555]">· Android {account.os_version}</span>
+      <span className="font-mono text-[#555]">· {account.device_id_preview}</span>
+    </span>
   );
 }
 
