@@ -17,6 +17,7 @@ type NavItem = {
 const NAV: NavItem[] = [
   { href: "/", label: "유저 검색" },
   { href: "/clans", label: "클랜" },
+  { href: "/explorer", label: "휴먼 탐색기" },
   { href: "/macros", label: "매크로" },
   { href: "/servers", label: "서버 상태" },
 ];

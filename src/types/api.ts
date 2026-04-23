@@ -251,3 +251,37 @@ export interface UpdateAccountPayload {
   kind?: AccountKind;
   selected_slave_index?: number | null;
 }
+
+export type ExplorerCategory = "human" | "inactive" | "active" | "error";
+export type ExplorerScanStatus =
+  | "running"
+  | "succeeded"
+  | "canceled"
+  | "failed";
+
+export interface ExplorerResult {
+  nickname: string;
+  category: ExplorerCategory;
+  account_id?: number | null;
+  level?: number | null;
+  clan_name?: string | null;
+  last_login_ms?: number | null;
+  error?: string | null;
+}
+
+export interface ExplorerScan {
+  id: string;
+  status: ExplorerScanStatus;
+  total: number;
+  processed: number;
+  inactivity_days: number;
+  results: ExplorerResult[];
+  started_at: string;
+  finished_at: string | null;
+  error: string | null;
+}
+
+export interface ExplorerScanRequest {
+  names: string[];
+  inactivity_days: number;
+}

@@ -10,6 +10,8 @@ import type {
   CreateAccountPayload,
   EligibilityRequest,
   EligibilityResponse,
+  ExplorerScan,
+  ExplorerScanRequest,
   HistoryResponse,
   JobResponse,
   MacroStatus,
@@ -258,6 +260,19 @@ export const api = {
   rerollMyAccountDevice: (id: string) =>
     request<StoredAccount>(
       `/me/accounts/${encodeURIComponent(id)}/reroll-device`,
+      { method: "POST" },
+    ),
+
+  explorerStartScan: (body: ExplorerScanRequest) =>
+    request<ExplorerScan>("/explorer/scan", {
+      method: "POST",
+      body: JSON.stringify(body),
+    }),
+  explorerGetScan: (id: string) =>
+    request<ExplorerScan>(`/explorer/scans/${encodeURIComponent(id)}`),
+  explorerCancelScan: (id: string) =>
+    request<ExplorerScan>(
+      `/explorer/scans/${encodeURIComponent(id)}/cancel`,
       { method: "POST" },
     ),
 };
