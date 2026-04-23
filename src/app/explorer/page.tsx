@@ -11,7 +11,7 @@ import type {
   ExplorerScan,
 } from "@/types/api";
 
-const MAX_NAMES = 1000;
+const MAX_NAMES = 10000;
 const POLL_MS = 1000;
 
 type Tab = "human" | "inactive" | "active" | "error";
@@ -144,8 +144,9 @@ export default function ExplorerPage() {
         <h1 className="text-[32px] font-bold tracking-tight text-white">휴먼 탐색기</h1>
         <p className="mt-2 text-[14px] text-[#b3b3b3]">
           닉네임을 한 줄에 하나씩 입력하면 휴먼 상태(풀린 닉) · 장기 미접속 · 사용 중 으로 분류합니다.
-          한 번에 최대 {MAX_NAMES}개까지 · 유저 검색/클랜 응답성 확보 위해 1 lane 은
-          예약된 채로 병렬 처리 (매크로/로그인에는 영향 없음).
+          한 번에 최대 {MAX_NAMES.toLocaleString()}개까지. 서버 부담을 줄이려 lane 당
+          ~4qps 로 완화 처리 · 유저 검색/클랜은 1 lane 예약으로 보호 · 매크로에는 영향 없음.
+          (1000개 기준 약 2분, 10000개 기준 약 20분 소요)
         </p>
       </div>
 
