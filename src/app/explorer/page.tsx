@@ -12,7 +12,7 @@ import type {
 } from "@/types/api";
 
 const MAX_NAMES = 10000;
-const POLL_MS = 1000;
+const POLL_MS = 500;
 
 type Tab = "human" | "inactive" | "active" | "error";
 const TABS: { key: Tab; label: string; accent: string }[] = [
@@ -144,9 +144,9 @@ export default function ExplorerPage() {
         <h1 className="text-[32px] font-bold tracking-tight text-white">휴먼 탐색기</h1>
         <p className="mt-2 text-[14px] text-[#b3b3b3]">
           닉네임을 한 줄에 하나씩 입력하면 휴먼 상태(풀린 닉) · 장기 미접속 · 사용 중 으로 분류합니다.
-          한 번에 최대 {MAX_NAMES.toLocaleString()}개까지. 서버 부담을 줄이려 lane 당
-          ~4qps 로 완화 처리 · 유저 검색/클랜은 1 lane 예약으로 보호 · 매크로에는 영향 없음.
-          (1000개 기준 약 2분, 10000개 기준 약 20분 소요)
+          한 번에 최대 {MAX_NAMES.toLocaleString()}개까지. 2 lane 병렬(~14qps) 로
+          처리 · 유저 검색/클랜은 1 lane 예약으로 보호 · 매크로에는 영향 없음.
+          (1000개 기준 약 1분 15초, 10000개 기준 약 12분 소요)
         </p>
       </div>
 
