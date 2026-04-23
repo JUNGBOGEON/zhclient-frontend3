@@ -294,6 +294,8 @@ function ResultTabs({
   );
 }
 
+type SortDir = "asc" | "desc";
+
 function ResultList({
   results,
   tab,
@@ -302,8 +304,22 @@ function ResultList({
   tab: Tab;
 }) {
   const [copied, setCopied] = useState(false);
+  // 기본값: 장기 미접속 탭은 "가장 오래된 순"(asc) — 풀 타이밍 임박 후보가 상단
+  const [sortDir, setSortDir] = useState<SortDir>("asc");
+
+  const sorted = useMemo(() => {
+    if (tab !== "inactive" && tab !== "active") return results;
+    const arr = [...results];
+    arr.sort((a, b) => {
+      const av = a.last_login_ms ?? 0;
+      const bv = b.last_login_ms ?? 0;
+      return sortDir === "asc" ? av - bv : bv - av;
+    });
+    return arr;
+  }, [results, sortDir, tab]);
+
   const doCopy = () => {
-    const text = results.map((r) => r.nickname).join("\n");
+    const text = sorted.map((r) => r.nickname).join("\n");
     navigator.clipboard.writeText(text);
     setCopied(true);
     window.setTimeout(() => setCopied(false), 1500);
@@ -317,19 +333,49 @@ function ResultList({
     );
   }
 
+  const showSort = tab === "inactive" || tab === "active";
+
   return (
     <div className="flex flex-col gap-3">
-      <div className="flex items-center justify-end">
+      <div className="flex items-center justify-end gap-2">
+        {showSort && (
+          <div className="flex items-center gap-1 rounded-full bg-[#1f1f1f] p-1">
+            <button
+              type="button"
+              onClick={() => setSortDir("asc")}
+              className={`rounded-full px-3 py-1 text-[12px] font-bold transition-colors ${
+                sortDir === "asc"
+                  ? "bg-white text-black"
+                  : "text-[#b3b3b3] hover:text-white"
+              }`}
+              title="마지막 접속이 오래된 순"
+            >
+              오래된 순 ↑
+            </button>
+            <button
+              type="button"
+              onClick={() => setSortDir("desc")}
+              className={`rounded-full px-3 py-1 text-[12px] font-bold transition-colors ${
+                sortDir === "desc"
+                  ? "bg-white text-black"
+                  : "text-[#b3b3b3] hover:text-white"
+              }`}
+              title="마지막 접속이 최근인 순"
+            >
+              최근 순 ↓
+            </button>
+          </div>
+        )}
         <button
           type="button"
           onClick={doCopy}
           className="rounded-full bg-[#1f1f1f] px-4 py-1.5 text-[12px] font-bold text-[#b3b3b3] hover:bg-[#2a2a2a] hover:text-white"
         >
-          {copied ? "복사됨" : `닉 목록 복사 (${results.length})`}
+          {copied ? "복사됨" : `닉 목록 복사 (${sorted.length})`}
         </button>
       </div>
       <div className="flex flex-col divide-y divide-[#272727] rounded-[6px] border border-[#272727]">
-        {results.map((r) => (
+        {sorted.map((r) => (
           <div
             key={r.nickname}
             className="flex items-center justify-between gap-4 px-4 py-3 hover:bg-[#1f1f1f]"
